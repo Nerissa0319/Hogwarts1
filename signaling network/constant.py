@@ -19,6 +19,7 @@ pathway_txt_path = os.path.join(pathway_path,'pathways')
 visualization_path = os.path.join(output_path, 'visualization')
 stat_whole_path = os.path.join(output_path, 'statistics', 'whole_signaling')
 stat_chart_whole_path = os.path.join(stat_whole_path, 'charts')
+cancer_comparison_path = os.path.join(output_path,'cancer_subtype')
 # stat_erbc_path = os.path.join(output_path,'statistics','erbc_signaling')
 # stat_chart_erbc_path = os.path.join(stat_erbc_path,'charts')
 # stat_tnbc_path = os.path.join(output_path,'statistics','tnbc_signaling')
@@ -54,7 +55,7 @@ for paths in [output_path, pathway_path, visualization_path,
               # erbc_target_path,tnbc_target_path,
               whole_dppr_path,
               # erbc_dppr_path,tnbc_dppr_path,
-              whole_pdist_path,random_path,pathway_txt_path
+              whole_pdist_path,random_path,pathway_txt_path,cancer_comparison_path
               ]:
     os.makedirs(paths, exist_ok=True)
 

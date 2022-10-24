@@ -7,7 +7,6 @@ from constant import *
 
 def main():
     # for some time-consuming functions like ppr/distance computing, ALWAYS KEEP FALSE
-
     # after creating the network for the first time, switch to False
     # remember NOT TO DELETE any .gexf file in output folder
     is_create = False  # create the signaling networks
@@ -22,21 +21,16 @@ def main():
     # KEEP FALSE
     is_distance = False  # whether to compute shortest_distance of each network
 
-    is_target_info = False  # whether to extract the information of targeted genes
+    is_target_info = False # whether to extract the information of targeted genes
     is_target_chart = False  # whether to plot the degree, eigen, etc. of targeted genes
 
-    # KEEP FALSE
-    is_target_pdist = False  # whether to extract dppr between target/non-target and cancer/disease genes
-
-    is_target_pdist_plot = False  # plot mean value of dppr between targets/non-targets and cancer/disease genes
-    # KEEP FALSE
-    is_target_distance = False
-
+    is_target_pdist_plot = False # plot mean value of dppr between targets/non-targets and cancer/disease genes
     is_target_distance_plot = False  # plot mean value of distance between targets/non-targets and cancer/disease genes
-    is_target_test = False
+    is_target_test = True
 
-    is_add_random = True
-    is_remove_random = True
+    is_add_random = False
+    is_remove_random = False
+    is_cancer_comparison = False
     if is_create:
         import HogswartCreate as cr
         cr.create_whole_signaling()
@@ -73,8 +67,7 @@ def main():
 
     if is_distance:
         import HogswartDistance as distance
-        for source in sorted(whole_signaling.nodes()):
-            distance.compute_shortest_distance(whole_signaling, source, whole_st_path)
+        distance.compute_shortest_distance(whole_signaling, whole_st_path)
         print('shortest distance of whole signaling network computed')
 
     import HogswartTarget as target
@@ -83,27 +76,34 @@ def main():
         print('information of targets and non-targets written into files')
     if is_target_chart:
         target.target_chart(whole_target_path, 'whole_signaling')
-    if is_target_pdist:
-        target.target_pdist(whole_pdist_path, whole_target_path, whole_signaling,9)
-    if is_target_distance:
-        target.target_distance(whole_st_path, whole_target_path, whole_signaling)
     if is_target_pdist_plot:
-        target.plot_pdist(whole_target_path, 9)
+        alpha = 0
+        for i in range(9):
+            alpha = (i+1)/10
+            target.plot_pdist(whole_pdist_path,whole_target_path,alpha)
     if is_target_distance_plot:
-        target.plot_distance(whole_target_path)
+        target.plot_distance(whole_st_path,whole_target_path)
     if is_target_test:
-        target.st_diff(whole_target_path, 'whole_signaling', 9)
-    if is_add_random:
-        import HogswartRandom as hogRan
-        for i in range(6):
-            percentage = 0.05 * (i + 1)
-            hogRan.run_add(whole_signaling, percentage)
+        target.st_diff(whole_st_path,whole_pdist_path,whole_target_path, 'whole_signaling', 9)
+
     if is_remove_random:
         import HogswartRandom as hogRan
-        for i in range(6):
-            percentage = 0.05 * (i + 1)
-            hogRan.run_remove(whole_signaling, percentage)
+        for i in range(4):
+            percentage = 5 * (i+1)/100
+            for j in range(5):
+                hogRan.run_remove(whole_signaling, percentage,j+1)
+    if is_add_random:
+        import HogswartRandom as hogRan
+        for i in range(4):
+            percentage = 5 * (i+1)/100
+            for j in range(5):
+                hogRan.run_add(whole_signaling, percentage,j+1)
 
+    if is_cancer_comparison:
+        import HogswartCanceType as cancer
+        cancer.pdist_vs_distance()
+        cancer.pdist_vs_other()
+        cancer.distance_vs_other()
 
 if __name__ == '__main__':
     # track the time of running the project
