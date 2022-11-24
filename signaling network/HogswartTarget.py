@@ -201,7 +201,7 @@ def plot_target_scatter(target_path, filename):
                 else:
                     nonx.append(x0)
                     nony.append(stat_dict[u])
-
+            # plot scatters of nodes vs topological features
             plt.scatter(tarx, tary, s=5, alpha=0.7, c='red', marker='v', label='Targets')
             plt.scatter(nonx, nony, s=1, alpha=0.4, c='blue', marker='x', label='Non-Targets')
             plt.yscale('log')
@@ -251,6 +251,7 @@ def plot_target_scatter(target_path, filename):
 
 # plot line charts of all statistical values for targets and non-targets
 def plot_target_line(target_path, filename):
+    # read dataframes from files
     tar_df = pd.read_csv(os.path.join(target_path, f'Targeted Genes Info_{filename}.txt'), sep='\t', header=0)
 
     non_target_df = pd.read_csv(os.path.join(target_path, f'Non-Targeted Genes Info_{filename}.txt'), sep='\t',
@@ -260,6 +261,7 @@ def plot_target_line(target_path, filename):
     all_info_df = pd.read_csv(os.path.join(target_path, f'All Genes Info_{filename}.txt'), sep='\t',
                               header=0)
 
+    # plot line chart for each feature
     def plot_target_stats_line(data, dfname, topology='', file_name='', save_to=''):
         plt.figure(figsize=(12, 9))
         for i in range(len(data)):
@@ -275,8 +277,10 @@ def plot_target_line(target_path, filename):
             # node = list(stat_dict.keys())
             value = list(stat_dict.values())
             x1 = np.linspace(0, 1, len(value))
-            plt.plot(x1, value, label=temp_name)
+            plt.plot(x1, value, label=temp_name) # plot line chart
+        # set xticks as percentage of nodes
         plt.xticks([0, 0.2, 0.4, 0.6, 0.8, 1], ['0', '20%', '40%', '60%', '80%', '100%'])
+        # set log scale to yaxis
         plt.yscale('log')
         plt.legend()
         plt.ylabel(f'log({topology})')
@@ -313,65 +317,71 @@ def target_chart(network_target_path, network_name):
 
 
 # plot histogram and scatter for mean values of pdist for both targets and non-targets
-def plot_pdist(network_pdist_path,network_target_path,alpha):
-    pdist = pd.read_csv(f'{network_pdist_path}/alpha = {alpha}/pdist.txt',sep='\t',
-                        header=0,index_col=0)  # read pdist.txt file to dataframe
-    target_pdist = pdist.loc[pdist.index.isin(target_ls),pdist.columns.isin(cancer_ls)] # extract target-oncogene
-    nontarget_pdist = pdist.loc[~pdist.index.isin(target_ls),pdist.columns.isin(cancer_ls)] # extract nontarget - oncogene
-    all_pdist = pdist.loc[:,pdist.columns.isin(cancer_ls)] # extract all genes - oncogene
+def plot_pdist(network_pdist_path, network_target_path, alpha):
+    # read files
+    pdist = pd.read_csv(f'{network_pdist_path}/alpha = {alpha}/pdist.txt', sep='\t',
+                        header=0, index_col=0)  # read pdist.txt file to dataframe
+    target_pdist = pdist.loc[pdist.index.isin(target_ls), pdist.columns.isin(cancer_ls)]  # extract target-oncogene
+    nontarget_pdist = pdist.loc[
+        ~pdist.index.isin(target_ls), pdist.columns.isin(cancer_ls)]  # extract nontarget - oncogene
+    all_pdist = pdist.loc[:, pdist.columns.isin(cancer_ls)]  # extract all genes - oncogene
     # target_pdist = target_pdist.replace(to_replace = 12.5129,value = np.NaN)
     # nontarget_pdist = nontarget_pdist.replace(to_replace = 12.5129,value = np.NaN)
     # all_pdist = all_pdist.replace(to_replace = 12.5129,value = np.NaN)
-    target_mean = target_pdist.mean(axis=1).sort_values(ascending=False) # compute mean value for targets
-    nontarget_mean = nontarget_pdist.mean(axis=1).sort_values(ascending=False) # compute mean value for non-targets
-    all_mean = all_pdist.mean(axis=1).sort_values(ascending=False) # compute mean value for all genes
+    target_mean = target_pdist.mean(axis=1).sort_values(ascending=False)  # compute mean value for targets
+    nontarget_mean = nontarget_pdist.mean(axis=1).sort_values(ascending=False)  # compute mean value for non-targets
+    all_mean = all_pdist.mean(axis=1).sort_values(ascending=False)  # compute mean value for all genes
 
     num = 0
-    for series in [target_mean,nontarget_mean]:
-        plt.figure(figsize=(12,9))
-        plt.scatter(series.index,series.values,s=5,alpha=0.6)
-        locs,labels=plt.xticks()
+    for series in [target_mean, nontarget_mean]:
+        plt.figure(figsize=(12, 9))
+        plt.scatter(series.index, series.values, s=5, alpha=0.6) # plot scatter charts of mean
+        # set xticks as percentage of nodes
+        locs, labels = plt.xticks()
         start = locs[0]
         end = locs[-1]
         diff = end - start
         plt.xticks(
             [start + diff * 0, start + diff * 0.2, start + diff * 0.4, start + diff * 0.6, start + diff * 0.8, end],
             ['0', '20%', '40%', '60%', '80%', '100%'])
-        plt.ylabel('Mean pdist')
-        plt.xlabel('Nodes')
-        saveto = f'{network_target_path}/pdist/alpha = {alpha}'
+        plt.ylabel('Mean pdist') #set ylabel
+        plt.xlabel('Nodes') # set xlabel
+        saveto = f'{network_target_path}/pdist/alpha = {alpha}' # save to png
         if not os.path.exists(saveto):
             os.makedirs(saveto)
-        if num == 0:
+        if num == 0: # num = 0 is target genes
             plt.title(r'Target - Oncogenes Mean Pdist Scatter')
             plt.savefig(f'{network_target_path}/pdist/alpha = {alpha}/Target - Oncogenes Mean Pdist Scatter.png')
-        else:
+        else: # else means non targets
             plt.title(r'NonTarget - Oncogenes Mean Pdist Scatter')
             plt.savefig(f'{network_target_path}/pdist/alpha = {alpha}/NonTarget - Oncogenes Mean Pdist Scatter.png')
         plt.close('all')
 
         plt.figure(figsize=(12, 9))
-        plt.hist(series.values, bins=50, edgecolor='black')
-        plt.yscale('log')
+        plt.hist(series.values, bins=50, edgecolor='black') # plot histogram of mean values of pdist
+        plt.yscale('log') # set log scale
         plt.ylabel('Count')
         plt.xlabel('Mean pdist')
         if num == 0:
             plt.title(r'Target - Oncogenes Mean Pdist Histogram')
+            # save to png
             plt.savefig(f'{network_target_path}/pdist/alpha = {alpha}/Target - Oncogenes Mean Pdist Histogram.png')
         else:
             plt.title(r'NonTarget - Oncogenes Mean Pdist Histogram')
+            # save to png
             plt.savefig(f'{network_target_path}/pdist/alpha = {alpha}/NonTarget - Oncogenes Mean Pdist Histogramo.png')
 
         plt.close('all')
         num += 1
 
-    plt.figure(figsize=(12,9))
-    x1=np.linspace(0,1,len(target_mean))
-    x2=np.linspace(0,1,len(nontarget_mean))
-    x3=np.linspace(0,1,len(all_mean))
-    plt.plot(x1,target_mean.values,label='Targets')
-    plt.plot(x2,nontarget_mean.values,label='Non Targets')
-    plt.plot(x3,all_mean.values,label='All Genes')
+    plt.figure(figsize=(12, 9))
+    # plot the line charts of target, non-target and all genes on one figure for better comparison
+    x1 = np.linspace(0, 1, len(target_mean))
+    x2 = np.linspace(0, 1, len(nontarget_mean))
+    x3 = np.linspace(0, 1, len(all_mean))
+    plt.plot(x1, target_mean.values, label='Targets')
+    plt.plot(x2, nontarget_mean.values, label='Non Targets')
+    plt.plot(x3, all_mean.values, label='All Genes')
     plt.legend()
     plt.xticks([0, 0.2, 0.4, 0.6, 0.8, 1], ['0', '20%', '40%', '60%', '80%', '100%'])
     plt.xlabel('Node')
@@ -380,26 +390,32 @@ def plot_pdist(network_pdist_path,network_target_path,alpha):
     plt.close('all')
 
 
-def plot_distance(network_distance_path,network_target_path):
-    distance = pd.read_csv(f'{network_distance_path}/distance.txt',sep='\t',
-                        header=0,index_col=0)  # read distance.txt file to dataframe
-    target_distance = distance.loc[distance.index.isin(target_ls),distance.columns.isin(cancer_ls)] # extract target-oncogene
-    nontarget_distance = distance.loc[~distance.index.isin(target_ls),distance.columns.isin(cancer_ls)] # extract nontarget - oncogene
-    all_distance = distance.loc[:,distance.columns.isin(cancer_ls)] # extract all genes - oncogene
+# plot line chart, histogram and scatter chart for distance
+def plot_distance(network_distance_path, network_target_path):
+    distance = pd.read_csv(f'{network_distance_path}/distance.txt', sep='\t',
+                           header=0, index_col=0)  # read distance.txt file to dataframe
+    target_distance = distance.loc[
+        distance.index.isin(target_ls), distance.columns.isin(cancer_ls)]  # extract target-oncogene
+    nontarget_distance = distance.loc[
+        ~distance.index.isin(target_ls), distance.columns.isin(cancer_ls)]  # extract nontarget - oncogene
+    all_distance = distance.loc[:, distance.columns.isin(cancer_ls)]  # extract all genes - oncogene
     # target_distance = target_distance.replace(to_replace = 0,value = np.NaN)
     # nontarget_distance = nontarget_distance.replace(to_replace = 0,value = np.NaN)
     # all_distance = all_distance.replace(to_replace = 0,value = np.NaN)
-    target_mean = target_distance.mean(axis=1).sort_values(ascending=False) # compute mean value for targets
-    nontarget_mean = nontarget_distance.mean(axis=1).sort_values(ascending=False) # compute mean value for non-targets
-    all_mean = all_distance.mean(axis=1).sort_values(ascending=False) # compute mean value for all genes
+    target_mean = target_distance.mean(axis=1).sort_values(ascending=False,
+                                                           na_position='first')  # compute mean value for targets
+    nontarget_mean = nontarget_distance.mean(axis=1).sort_values(ascending=False,
+                                                                 na_position='first')  # compute mean value for non-targets
+    all_mean = all_distance.mean(axis=1).sort_values(ascending=False,
+                                                     na_position='first')  # compute mean value for all genes
     saveto = f'{network_target_path}/distance'
     if not os.path.exists(saveto):
         os.makedirs(saveto)
     num = 0
-    for series in [target_mean,nontarget_mean]:
-        plt.figure(figsize=(12,9))
-        plt.scatter(series.index,series.values,s=5,alpha=0.6)
-        locs,labels=plt.xticks()
+    for series in [target_mean, nontarget_mean]:
+        plt.figure(figsize=(12, 9))
+        plt.scatter(series.index, series.values, s=5, alpha=0.6) # plot scatter charts for distance mean
+        locs, labels = plt.xticks()
         start = locs[0]
         end = locs[-1]
         diff = end - start
@@ -409,36 +425,37 @@ def plot_distance(network_distance_path,network_target_path):
         plt.ylabel('Mean distance')
         plt.xlabel('Nodes')
 
-        if num == 0:
+        if num == 0: # targets
             plt.title(r'Target - Oncogenes Mean Distance Scatter')
             plt.savefig(f'{network_target_path}/distance/Target - Oncogenes Mean Distance Scatter.png')
-        else:
+        else: # nontargets
             plt.title(r'NonTarget - Oncogenes Mean Distance Scatter')
             plt.savefig(f'{network_target_path}/distance/NonTarget - Oncogenes Mean Distance Scatter.png')
         plt.close('all')
 
         plt.figure(figsize=(12, 9))
-        plt.hist(series.values, bins=50, edgecolor='black')
-        plt.yscale('log')
+        plt.hist(series.values, bins=50, edgecolor='black') # plot histograms for distance
+        plt.yscale('log') # set log scale
         plt.ylabel('Count')
         plt.xlabel('Mean distance')
         if num == 0:
             plt.title(r'Target - Oncogenes Mean Distance Histogram')
-            plt.savefig(f'{network_target_path}/distance/Target - Oncogenes Mean Distance Histogram.png')
+            plt.savefig(f'{network_target_path}/distance/Target - Oncogenes Mean Distance Histogram.png') # save to png
         else:
             plt.title(r'NonTarget - Oncogenes Mean Distance Histogram')
-            plt.savefig(f'{network_target_path}/distance/NonTarget - Oncogenes Mean Distance Histogramo.png')
+            plt.savefig(f'{network_target_path}/distance/NonTarget - Oncogenes Mean Distance Histogramo.png') # save to png
 
         plt.close('all')
         num += 1
 
-    plt.figure(figsize=(12,9))
-    x1=np.linspace(0,1,len(target_mean))
-    x2=np.linspace(0,1,len(nontarget_mean))
-    x3=np.linspace(0,1,len(all_mean))
-    plt.plot(x1,target_mean.values,label='Targets')
-    plt.plot(x2,nontarget_mean.values,label='Non Targets')
-    plt.plot(x3,all_mean.values,label='All Genes')
+    plt.figure(figsize=(12, 9))
+    # plot the line charts of targets, nontargets and all genes for distance mean on one figure for better comparison
+    x1 = np.linspace(0, 1, len(target_mean))
+    x2 = np.linspace(0, 1, len(nontarget_mean))
+    x3 = np.linspace(0, 1, len(all_mean))
+    plt.plot(x1, target_mean.values, label='Targets')
+    plt.plot(x2, nontarget_mean.values, label='Non Targets')
+    plt.plot(x3, all_mean.values, label='All Genes')
     plt.legend()
     plt.xticks([0, 0.2, 0.4, 0.6, 0.8, 1], ['0', '20%', '40%', '60%', '80%', '100%'])
     plt.xlabel('Node')
@@ -448,17 +465,18 @@ def plot_distance(network_distance_path,network_target_path):
 
 
 # conduct the two-sample ks test for targets and non-targets
-def st_diff(network_distance_path,network_pdist_path,target_path, filename, iter):
+def st_diff(network_distance_path, network_pdist_path, target_path, filename, iter):
     def ks_test_target(target_data, non_target_data, statistics_name):
         target_value = target_data.loc[:, statistics_name]
         non_target_value = non_target_data.loc[:, statistics_name]
         from scipy import stats
-        s, pvalue = stats.ks_2samp(target_value, non_target_value)
-        if pvalue < 0.05:
+        s, pvalue = stats.ks_2samp(target_value, non_target_value) # K-S two sample test
+        # NULL Hypothesis: targets and non-targets are drawn from the same distribution
+        if pvalue < 0.05: # reject null
             print(f'pvalue of {pvalue} is lower than the threshold 0.05, reject the null hypothesis.')
             print(
                 f'Thus {statistics_name} for targets and non-targets in signaling network is statistically different\n')
-        else:
+        else: # do not reject null
             print(f'pvalue of {pvalue} is not lower than the threshold 0.05, we do not reject the null hypothesis.')
             print(f'Thus {statistics_name} for targets and non-targets in signaling network has no statistical '
                   f'difference\n')
@@ -475,9 +493,9 @@ def st_diff(network_distance_path,network_pdist_path,target_path, filename, iter
                 'Out-Degree',
                 'Pagerank']
     for stat in dataname:
-        ks_test_target(tar_df, non_target_df, stat)
+        ks_test_target(tar_df, non_target_df, stat) # perform ks test for each of the above topological features
 
-    # test for pdist and distance
+    # test for pdist and distance mean
     import numpy as np
     distance = pd.read_csv(f'{network_distance_path}/distance.txt', sep='\t',
                            header=0, index_col=0)  # read distance.txt file to dataframe
@@ -486,8 +504,10 @@ def st_diff(network_distance_path,network_pdist_path,target_path, filename, iter
     nontarget_distance = distance.loc[
         ~distance.index.isin(target_ls), distance.columns.isin(cancer_ls)]  # extract nontarget - oncogene
     all_distance = distance.loc[:, distance.columns.isin(cancer_ls)]  # extract all genes - oncogene
-    target_mean = target_distance.mean(axis=1).sort_values(ascending=False)  # compute mean value for targets
-    nontarget_mean = nontarget_distance.mean(axis=1).sort_values(ascending=False)  # compute mean value for non-targets
+    target_mean = target_distance.mean(axis=1).sort_values(ascending=False,
+                                                           na_position='first')  # compute mean value for targets
+    nontarget_mean = nontarget_distance.mean(axis=1).sort_values(ascending=False,
+                                                                 na_position='first')  # compute mean value for non-targets
     from scipy import stats
     s, pvalue = stats.ks_2samp(target_mean, nontarget_mean)
     if pvalue < 0.05:
@@ -499,7 +519,7 @@ def st_diff(network_distance_path,network_pdist_path,target_path, filename, iter
         print(f'Thus shortest distance for targets and non-targets in signaling network has no statistical '
               f'difference\n')
     for i in range(iter):
-        alpha = (i+1)/10
+        alpha = (i + 1) / 10
         pdist = pd.read_csv(f'{network_pdist_path}/alpha = {alpha}/pdist.txt', sep='\t',
                             header=0, index_col=0)  # read pdist.txt file to dataframe
         target_pdist = pdist.loc[pdist.index.isin(target_ls), pdist.columns.isin(cancer_ls)]  # extract target-oncogene

@@ -87,7 +87,7 @@ def compute_network_stats(graph, filename, save_to):
             f1.write("\n")
     f1.close()
     print('degree centrality computed')
-
+    # closeness centrality
     closeness_centrality_dict = dict(nx.closeness_centrality(graph))
     sorted_closeness_centrality = others.rank(closeness_centrality_dict)
     f.write("\n")
@@ -110,7 +110,6 @@ def compute_network_stats(graph, filename, save_to):
             f1.write("\n")
     f1.close()
     print('closeness centrality computed')
-
     # compute betweenness and eigenvector centralities
     betweenness_dict = nx.betweenness_centrality(graph, weight='weight')
     eigenvector_dict = nx.eigenvector_centrality(graph, max_iter=600, weight='weight')

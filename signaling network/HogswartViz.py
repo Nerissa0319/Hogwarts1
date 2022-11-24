@@ -12,10 +12,10 @@ def viz_network(graph, filename, save_to):
         colors.append(graph.edges[e]['edge_colors'])
 
     plt.figure(figsize=(100, 100))
-    pos = nx.spring_layout(graph, k=0.15, iterations=20)
-    nx.draw_networkx_nodes(graph, pos, node_size=1000, alpha=0.75)
-    nx.draw_networkx_edges(graph, pos, width=0.7, edge_color=colors, arrows=True, arrowsize=10)
-    nx.draw_networkx_labels(graph, pos, font_size=15, font_color='grey')
+    pos = nx.spring_layout(graph, k=0.15, iterations=20) # use spring layout
+    nx.draw_networkx_nodes(graph, pos, node_size=1000, alpha=0.75) # draw nodes
+    nx.draw_networkx_edges(graph, pos, width=0.7, edge_color=colors, arrows=True, arrowsize=10) # draw edges
+    nx.draw_networkx_labels(graph, pos, font_size=15, font_color='grey') # draw labels
     plt.axis('equal')
     print(f'{filename} visualized')
 

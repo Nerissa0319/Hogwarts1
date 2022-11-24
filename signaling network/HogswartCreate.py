@@ -7,20 +7,20 @@ from constant import *
 
 # remove nerual links from a network
 def remove_phy_edge(graph):
-    removed_edge = []
+    removed_edge = [] # edges to be removed (neural links)
     for u, v in graph.edges():
-        if graph.edges[u, v]['edge_types'] == 'Phy':
-            removed_edge.append([u, v])
+        if graph.edges[u, v]['edge_types'] == 'Phy': # 'physical binding' links, also neural links
+            removed_edge.append([u, v]) # edges to be removed
 
     for e in removed_edge:
         u = e[0]
         v = e[1]
-        graph.remove_edge(u, v)
+        graph.remove_edge(u, v) # remove all the edges in [remvoed_edge]
 
     new_G = nx.DiGraph()
     new_G.add_edges_from(graph.edges())
     node_ls = new_G.nodes()
-    result_graph = graph.subgraph(node_ls)
+    result_graph = graph.subgraph(node_ls) # result graph is signaling graph without neural links
     # nx.write_gexf(result, os.path.join(output_path, '_'.join((filename, 'signaling.gexf'))))
     return result_graph
 
@@ -34,6 +34,7 @@ def ER_positive_breast_cancer(G):
 
     for u in list(mutation_frequency['Gene name']):
         if u in G.nodes:
+            # add attribute 'mutation frequency', which is a dictionary of 3 fields (mutated samples, samples tested, percentage‘
             G.nodes[u]['ER Positive Breast Cancer_Mutation_Frequency'] = {
                 "Mutated Samples": list(
                     mutation_frequency.loc[mutation_frequency['Gene name'] == u, "Mutated samples"])[0],
@@ -42,6 +43,7 @@ def ER_positive_breast_cancer(G):
                 "Percentage": list(
                     mutation_frequency.loc[mutation_frequency['Gene name'] == u, "Percentage"])[0]
             }
+            # add attribut 'fold change'
             if len(list(gene_expression_fold_change.loc[gene_expression_fold_change['Gene'] == u, "Fold change"])) != 0:
                 G.nodes[u]['ER Positive Breast Cancer_Fold_Change'] = {
                     "Fold Change":
@@ -58,6 +60,7 @@ def Triple_negative_cancer(G):
 
     for u in list(mutation_frequency['Gene name']):
         if u in G.nodes:
+            # add attribute 'mutation frequency', which is a dictionary of 3 fields (mutated samples, samples tested, percentage‘
             G.nodes[u]['Triple Negative Cancer_Mutation_Frequency'] = {
                 "Mutated Samples": list(
                     mutation_frequency.loc[mutation_frequency['Gene name'] == u, "Mutated samples"])[0],
@@ -66,6 +69,7 @@ def Triple_negative_cancer(G):
                 "Percentage": list(
                     mutation_frequency.loc[mutation_frequency['Gene name'] == u, "Percentage"])[0]
             }
+            # add attribut 'fold change'
             if len(list(gene_expression_fold_change.loc[gene_expression_fold_change['Gene'] == u, "Fold change"])) != 0:
                 G.nodes[u]['Triple Negative Cancer_Fold_Change'] = {
                     "Fold Change":
@@ -83,15 +87,10 @@ def add_attri(protease_file_name, G):
     # add the data of the protease output file to node attribute
     for u in list(protease_df['Gene.symbol']):
         if u in G.nodes:
-            if ((len(list(protease_df.loc[protease_df['Gene.symbol'] == u, "ID"])) != 0)
-                    # (len(list(protease_df.loc[protease_df['Gene'] == u, "ID"])) != 0) &
-                    # (len(list(protease_df.loc[protease_df['Gene'] == u, "ID"])) != 0) &
-                    # (len(list(protease_df.loc[protease_df['Gene'] == u, "ID"])) != 0) &
-                    # (len(list(protease_df.loc[protease_df['Gene'] == u, "ID"])) != 0) &
-            ):
+            if len(list(protease_df.loc[protease_df['Gene.symbol'] == u, "ID"])) != 0: # if not an empty cell
 
                 G.nodes[u][protease_file_name] = {
-                }
+                } # add attributes of protease output
                 for name in col_names:
                     G.nodes[u][protease_file_name][name] = list(
                         protease_df.loc[protease_df['Gene.symbol'] == u, name])[0]

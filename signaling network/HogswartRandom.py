@@ -11,6 +11,8 @@ import HogswartDistance as distance
 import HogswartPDist as pdist
 import HogswartTarget as target
 
+'''in this file, we remove/add random edges based on the signaling network and get new networks,
+then performed all the exploratory analysis on the new networks to see if our method is robust to uncertainty'''
 
 # add random edges to a network with a given percentage
 def add_random_edge(G, percentage):
@@ -29,16 +31,19 @@ def add_random_edge(G, percentage):
 
 
 # add the edges and then compute and plot statistics for the new network
-def run_add(network,percentage,iter_no):
+def run_add(network,percentage):
     added_edge = add_random_edge(network, percentage)
-    nx.write_gexf(added_edge,f'{random_path}\\{iter_no}\\added_edge_{percentage}\\added_edge_{percentage}.gexf')
-    random_stat_path = f'{random_path}\\{iter_no}\\added_edge_{percentage}\\statistics'
-    random_ppr_path = f'{random_path}\\{iter_no}\\added_edge_{percentage}\\ppr'
-    random_dppr_path = f'{random_path}\\{iter_no}\\added_edge_{percentage}\\dppr'
-    random_pdist_path = f'{random_path}\\{iter_no}\\added_edge_{percentage}\\pdist'
-    random_target_path = f'{random_path}\\{iter_no}\\added_edge_{percentage}\\target'
-    random_stat_chart_path = f'{random_path}\\{iter_no}\\added_edge_{percentage}\\statistics\\charts'
-    random_distance_path = f'{random_path}\\{iter_no}\\added_edge_{percentage}\\distance'
+    if not os.path.exists(f'{random_path}\\added_edge_{percentage}'):
+        os.makedirs(f'{random_path}\\added_edge_{percentage}')
+    # nx.write_gexf(added_edge,f'{random_path}\\added_edge_{percentage}\\added_edge_{percentage}.gexf')
+    # added_edge = nx.read_gexf(f'{random_path}\\added_edge_{percentage}\\added_edge_{percentage}.gexf')
+    random_stat_path = f'{random_path}\\added_edge_{percentage}\\statistics'
+    random_ppr_path = f'{random_path}\\added_edge_{percentage}\\ppr'
+    random_dppr_path = f'{random_path}\\added_edge_{percentage}\\dppr'
+    random_pdist_path = f'{random_path}\\added_edge_{percentage}\\pdist'
+    random_target_path = f'{random_path}\\added_edge_{percentage}\\target'
+    random_stat_chart_path = f'{random_path}\\added_edge_{percentage}\\statistics\\charts'
+    random_distance_path = f'{random_path}\\added_edge_{percentage}\\distance'
     for p in [random_stat_chart_path, random_stat_path, random_ppr_path, random_dppr_path,
               random_pdist_path, random_distance_path, random_target_path]:
         if not os.path.exists(p):
@@ -50,15 +55,16 @@ def run_add(network,percentage,iter_no):
     # execute the target-related functions in the new network
     target.write_target_info(f'added_edge_{percentage}', random_stat_path, random_target_path)
     target.target_chart(random_target_path, f'added_edge_{percentage}')
-    # compute the ppr, dppr, pdist of the new network
-    pdist.pdist_alpha(added_edge, random_ppr_path, random_stat_path, f'added_edge_{percentage}', random_dppr_path,
-                      random_pdist_path, 2)
     # compute the shortest distance for each pair of nodes in the new network
-
     distance.compute_shortest_distance(added_edge, random_distance_path)
-    target.plot_pdist(random_pdist_path,random_target_path,2)
-    target.plot_distance(random_distance_path,random_target_path)
-    target.st_diff(random_target_path, f'added_edge_{percentage}',2)
+    # compute pdist
+    pdist.pdist_alpha(added_edge,random_ppr_path,random_stat_path,f'added_edge_{percentage}',random_dppr_path,random_pdist_path,iter=2)
+    alpha = 0
+    for i in range(2): # we just keep pdist of alpha = 0.1 and 0.2
+        alpha = (i + 1) / 10
+        target.plot_pdist(random_pdist_path, random_target_path, alpha) # plot pdistance
+    target.plot_distance(random_distance_path,random_target_path) # plot distance
+    target.st_diff(random_distance_path,random_pdist_path,random_target_path, f'added_edge_{percentage}',2) # perform ks test
 
 
 # remove random edges from a network with a given percentage
@@ -85,28 +91,38 @@ def remove_random_edge(G, percentage):
 
 
 # remove random edges and compute/plot the statistics for the new network
-def run_remove(network,percentage,iter_no):
+def run_remove(network,percentage):
     removed_edge = remove_random_edge(network, percentage)
-    nx.write_gexf(removed_edge, f'{random_path}\\{iter_no}\\removed_edge_{percentage}\\removed_edge_{percentage}.gexf')
-    random_stat_path = f'{random_path}\\{iter_no}\\removed_edge_{percentage}\\statistics'
-    random_ppr_path = f'{random_path}\\{iter_no}\\removed_edge_{percentage}\\ppr'
-    random_dppr_path = f'{random_path}\\{iter_no}\\removed_edge_{percentage}\\dppr'
-    random_pdist_path = f'{random_path}\\{iter_no}\\removed_edge_{percentage}\\pdist'
-    random_target_path = f'{random_path}\\{iter_no}\\removed_edge_{percentage}\\target'
-    random_stat_chart_path = f'{random_path}\\{iter_no}\\removed_edge_{percentage}\\statistics\\charts'
-    random_distance_path = f'{random_path}\\{iter_no}\\removed_edge_{percentage}\\distance'
+    if not os.path.exists(f'{random_path}\\removed_edge_{percentage}'):
+        os.makedirs(f'{random_path}\\removed_edge_{percentage}')
+    nx.write_gexf(removed_edge, f'{random_path}\\removed_edge_{percentage}\\removed_edge_{percentage}.gexf')
+    removed_edge = nx.read_gexf(f'{random_path}\\removed_edge_{percentage}\\removed_edge_{percentage}.gexf')
+    random_stat_path = f'{random_path}\\removed_edge_{percentage}\\statistics'
+    random_ppr_path = f'{random_path}\\removed_edge_{percentage}\\ppr'
+    random_dppr_path = f'{random_path}\\removed_edge_{percentage}\\dppr'
+    random_pdist_path = f'{random_path}\\removed_edge_{percentage}\\pdist'
+    random_target_path = f'{random_path}\\removed_edge_{percentage}\\target'
+    random_stat_chart_path = f'{random_path}\\removed_edge_{percentage}\\statistics\\charts'
+    random_distance_path = f'{random_path}\\removed_edge_{percentage}\\distance'
     for p in [random_stat_chart_path, random_stat_path, random_ppr_path, random_dppr_path,
               random_pdist_path, random_distance_path, random_target_path]:
         if not os.path.exists(p):
             os.makedirs(p)
+    # compute statistics of the random network
     stat.compute_network_stats(removed_edge, f'removed_edge_{percentage}', random_stat_path)
+    # plot statistics data of the random network
     stat.plot_network_stats(f'removed_edge_{percentage}', random_stat_path,
                             f'{random_stat_path}\\charts')
+    # # execute the target-related functions in the new network
     target.write_target_info(f'removed_edge_{percentage}', random_stat_path, random_target_path)
     target.target_chart(random_target_path, f'removed_edge_{percentage}')
-    pdist.pdist_alpha(removed_edge, random_ppr_path, random_stat_path, f'removed_edge_{percentage}', random_dppr_path,
-                      random_pdist_path, 2)
+    # compute distance and pdistance
     distance.compute_shortest_distance(removed_edge, random_distance_path)
-    target.plot_pdist(random_pdist_path,random_target_path,2)
-    target.plot_distance(random_distance_path,random_target_path)
-    target.st_diff(random_target_path, f'removed_edge_{percentage}',2)
+    pdist.pdist_alpha(removed_edge,random_ppr_path,random_stat_path,f'removed_edge_{percentage}',random_dppr_path,random_pdist_path,iter=2)
+    alpha = 0
+    for i in range(2):
+        alpha = (i + 1) / 10
+        target.plot_pdist(random_pdist_path, random_target_path, alpha) # plot pdist
+    target.plot_distance(random_distance_path,random_target_path) # plot distance
+    target.st_diff(random_distance_path,random_pdist_path,random_target_path, f'removed_edge_{percentage}',2) # perform ks test
+

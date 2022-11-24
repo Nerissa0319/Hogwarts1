@@ -2,295 +2,258 @@ from constant import *
 import pandas as pd
 import ast
 import matplotlib.pyplot as plt
+import seaborn as sns
 import numpy as np
 import random
 import math
+import statistics
+from scipy.stats import spearmanr
+
+'''Comparing topological features in different cancer subtypes'''
+
+# read graph
 whole_signaling = nx.read_gexf(os.path.join(output_path, 'whole_signaling.gexf'))
-target_in_network = []
-nontar_in_network = []
-for u in whole_signaling.nodes():
-    if u in target_ls:
-        target_in_network.append(u)
-    else:
-        nontar_in_network.append(u)
+# read data from pdistance(alpha=0.2) and distance txt files
+whole_pdist_df = pd.read_csv(f'{whole_pdist_path}\\alpha = 0.2\\pdist.txt', sep='\t', index_col=0, header=0)
+whole_distance_df = pd.read_csv(f'{whole_st_path}\\distance.txt', sep='\t', index_col=0, header=0)
 
 
 # find genes for cancer subtypes:
 def find_subgene(network):
-    prostate_onco = []
-    breast_onco = []
-    prostate_target = []
-    breast_target = []
-    # extract oncogenes for specific cancer types
+    prostate_onco_ = []  # oncogenes of prostate cancer
+    breast_onco_ = []  # oncogenes of breast cancer
+    prostate_target_ = []  # drug targets for prostate cancer
+    breast_target_ = []  # drug targets for breast cancer
+
+    # find oncogenes for each cancer subtype from cancer gene census dataframe ()
     for index, row in cancer_df.iterrows():
         if 'prostate' in str(row['Tumour Types(Somatic)']) or 'prostate' in str(row['Tumour Types(Germline)']):
             if row['Gene Symbol'] in network.nodes():  # remove those not in signaling network
-                prostate_onco.append(row['Gene Symbol'])
+                prostate_onco_.append(row['Gene Symbol'])
         if 'breast' in str(row['Tumour Types(Somatic)']) or 'prostate' in str(row['Tumour Types(Germline)']):
             if row['Gene Symbol'] in network.nodes():  # remove those not in signaling network
-                breast_onco.append(row['Gene Symbol'])
+                breast_onco_.append(row['Gene Symbol'])
+    # find target genes for each cancer subtype
     for index, row in target_df.iterrows():
         if 'Prostate Cancer' in str(row['Indications']) or 'prostate cancer' in str(row['Indications']):
             temp = str(row['Targets']).split('; ')
             for gene in temp:
                 if gene in network.nodes():
-                    prostate_target.append(gene)
+                    prostate_target_.append(gene)
         if 'Breast Cancer' in str(row['Indications']) or 'breast cancer' in str(row['Indications']):
             temp = str(row['Targets']).split('; ')
             for gene in temp:
                 if gene in network.nodes():
-                    breast_target.append(gene)
-    prostate_target = list(set(prostate_target))
-    breast_target = list(set(breast_target))
-
-    return breast_onco, prostate_onco, breast_target, prostate_target
-
-
-bc_onco, pro_onco, bc_tar, pro_tar = find_subgene(whole_signaling)
-
-
-def find_feature():
-    # create a dataframe to store pdist value between targets/non-targets and prostate oncogenes
-    pro_target_pdist = pd.DataFrame(index=pd.Index(target_in_network), columns=pd.Index(pro_onco))
-    pro_non_pdist = pd.DataFrame(index=pd.Index(nontar_in_network), columns=pd.Index(pro_onco))
-    breast_target_pdist = pd.DataFrame(index=pd.Index(target_in_network), columns=pd.Index(bc_onco))
-    breast_non_pdist = pd.DataFrame(index=pd.Index(nontar_in_network), columns=pd.Index(bc_onco))
-
-    pro_target_distance = pd.DataFrame(index=pd.Index(target_in_network), columns=pd.Index(pro_onco))
-    pro_non_distance = pd.DataFrame(index=pd.Index(nontar_in_network), columns=pd.Index(pro_onco))
-    breast_target_distance = pd.DataFrame(index=pd.Index(target_in_network), columns=pd.Index(bc_onco))
-    breast_non_distance = pd.DataFrame(index=pd.Index(nontar_in_network), columns=pd.Index(bc_onco))
-    whole_pdist_df = pd.read_csv(f'{whole_pdist_path}\\alpha = 0.2\\pdist.txt', sep='\t', index_col=0, header=0)
-    whole_distance_df = pd.read_csv(f'{whole_st_path}\\distance.txt', sep='\t', index_col=0, header=0)
-
-    for columns in pro_onco:
-        for index in target_in_network:
-            pro_target_pdist.loc[index, columns] = whole_pdist_df.loc[index, columns]
-            pro_target_distance.loc[index, columns] = whole_distance_df.loc[index, columns]
-        for index in nontar_in_network:
-            pro_non_pdist.loc[index, columns] = whole_pdist_df.loc[index, columns]
-            pro_non_distance.loc[index, columns] = whole_distance_df.loc[index, columns]
-    for columns in bc_onco:
-        for index in target_in_network:
-            breast_target_pdist.loc[index, columns] = whole_pdist_df.loc[index, columns]
-            breast_target_distance.loc[index, columns] = whole_distance_df.loc[index, columns]
-        for index in nontar_in_network:
-            breast_non_pdist.loc[index, columns] = whole_pdist_df.loc[index, columns]
-            breast_non_distance.loc[index, columns] = whole_distance_df.loc[index, columns]
-
-    # breast_target_distance.replace(0,np.NaN,inplace=True)
-    # breast_non_distance.replace(0,np.NaN,inplace=True)
-    # pro_target_distance.replace(0,np.NaN,inplace=True)
-    # pro_non_distance.replace(0,np.NaN,inplace=True)
-    # breast_target_pdist.replace(12.5129,np.NaN,inplace=True)
-    # breast_non_pdist.replace(12.5129,np.NaN,inplace=True)
-    # pro_target_pdist.replace(12.5129,np.NaN,inplace=True)
-    # pro_non_pdist.replace(12.5129,np.NaN,inplace=True)
-
-    return breast_target_pdist, breast_non_pdist, pro_target_pdist, pro_non_pdist, breast_target_distance, breast_non_distance, pro_target_distance, pro_non_distance
+                    breast_target_.append(gene)
+    prostate_target_ = list(set(prostate_target_))  # remove redundant elements from the list
+    breast_target_ = list(set(breast_target_))  # remove redundant elements from the list
+    prostate_nontarget_ = []  # genes in signaling network which are not prostate cancer targets
+    breast_nontarget_ = []  # genes in signaling network which are not breast cancer targets
+    for u in network.nodes():
+        if not u in prostate_target_:
+            prostate_nontarget_.append(u)
+        if not u in breast_target_:
+            breast_nontarget_.append(u)
+    return breast_onco_, prostate_onco_, breast_target_, prostate_target_, breast_nontarget_, prostate_nontarget_
 
 
-bc_target_pdist, bc_non_pdist, prostate_target_pdist, prostate_non_pdist, bc_target_distance, bc_non_distance, prostate_target_distance, prostate_non_distance = find_feature()
+# extract topological features for different cancer subtypes
+def find_feature(breast_onco_, prostate_onco_, breast_target_, prostate_target_, breast_nontarget_,
+                 prostate_nontarget_):
+    # create a dataframe to store pdist and distance for cancer subtype
+    prostate_target_pdist_ = pd.DataFrame(index=pd.Index(prostate_target_), columns=pd.Index(prostate_onco_))
+    prostate_non_pdist_ = pd.DataFrame(index=pd.Index(prostate_nontarget_), columns=pd.Index(prostate_onco_))
+    breast_target_pdist_ = pd.DataFrame(index=pd.Index(breast_target_), columns=pd.Index(breast_onco_))
+    breast_non_pdist_ = pd.DataFrame(index=pd.Index(breast_nontarget_), columns=pd.Index(breast_onco_))
+
+    prostate_target_distance_ = pd.DataFrame(index=pd.Index(prostate_target_), columns=pd.Index(prostate_onco_))
+    prostate_non_distance_ = pd.DataFrame(index=pd.Index(prostate_nontarget_), columns=pd.Index(prostate_onco_))
+    breast_target_distance_ = pd.DataFrame(index=pd.Index(breast_target_), columns=pd.Index(breast_onco_))
+    breast_non_distance_ = pd.DataFrame(index=pd.Index(breast_nontarget_), columns=pd.Index(breast_onco_))
+    # assign values to dataframes
+    for columns in prostate_onco_:
+        for index in prostate_target_:
+            prostate_target_pdist_.loc[index, columns] = whole_pdist_df.loc[index, columns]
+            prostate_target_distance_.loc[index, columns] = whole_distance_df.loc[index, columns]
+        for index in prostate_nontarget_:
+            prostate_non_pdist_.loc[index, columns] = whole_pdist_df.loc[index, columns]
+            prostate_non_distance_.loc[index, columns] = whole_distance_df.loc[index, columns]
+    for columns in breast_onco_:
+        for index in breast_target_:
+            breast_target_pdist_.loc[index, columns] = whole_pdist_df.loc[index, columns]
+            breast_target_distance_.loc[index, columns] = whole_distance_df.loc[index, columns]
+        for index in breast_nontarget_:
+            breast_non_pdist_.loc[index, columns] = whole_pdist_df.loc[index, columns]
+            breast_non_distance_.loc[index, columns] = whole_distance_df.loc[index, columns]
+    # write the dataframes to txt files
+    prostate_target_distance_.to_csv(f'{cancer_comparison_path}//prostate_cancer_target_distance.txt', sep='\t',
+                                     header=True,
+                                     index=True)
+    prostate_target_pdist_.to_csv(f'{cancer_comparison_path}//prostate_cancer_target_pdistance.txt', sep='\t',
+                                  header=True,
+                                  index=True)
+    prostate_non_distance_.to_csv(f'{cancer_comparison_path}//prostate_cancer_nontarget_distance.txt', sep='\t',
+                                  header=True,
+                                  index=True)
+    prostate_non_pdist_.to_csv(f'{cancer_comparison_path}//prostate_cancer_nontarget_pdistance.txt', sep='\t',
+                               header=True,
+                               index=True)
+    breast_target_distance_.to_csv(f'{cancer_comparison_path}//breast_cancer_target_distance.txt', sep='\t',
+                                   header=True,
+                                   index=True)
+    breast_target_pdist_.to_csv(f'{cancer_comparison_path}//breast_cancer_target_pdistance.txt', sep='\t', header=True,
+                                index=True)
+    breast_non_distance_.to_csv(f'{cancer_comparison_path}//breast_cancer_nontarget_distance.txt', sep='\t',
+                                header=True,
+                                index=True)
+    breast_non_pdist_.to_csv(f'{cancer_comparison_path}//breast_cancer_nontarget_pdistance.txt', sep='\t', header=True,
+                             index=True)
+
+    return
 
 
-def pdist_vs_distance():
-    # prostate cancer
-    tar_pdist_mean = []
-    non_pdist_mean = []
-    tar_distance_mean = []
-    non_distance_mean = []
-    for index, row in prostate_target_pdist.iterrows():
-        tar_pdist_mean.append(row.mean())
-    sorted_tar_pdist_mean = sorted(tar_pdist_mean,key=lambda f: float('-inf') if math.isnan(f) else f,reverse=True)
-    for index, row in prostate_non_pdist.iterrows():
-        non_pdist_mean.append(row.mean())
-    sorted_non_pdist_mean = sorted(non_pdist_mean, key=lambda f: float('-inf') if math.isnan(f) else f,reverse=True)
-    plt.figure(figsize=(12, 9))
-    x1 = np.linspace(0, 1, len(sorted_tar_pdist_mean))
-    plt.plot(x1, sorted_tar_pdist_mean, label='targets')
-    x2 = np.linspace(0, 1, len(sorted_non_pdist_mean))
-    plt.plot(x2, sorted_non_pdist_mean, label='non-targets')
-    plt.legend()
-    plt.xticks([0, 0.2, 0.4, 0.6, 0.8, 1], ['0', '20%', '40%', '60%', '80%', '100%'])
-    plt.xlabel('Node')
-    plt.title(f'PDist to Prostate Cancer Oncogenes')
-    plt.savefig(f'{cancer_comparison_path}/PDist to Prostate Cancer Oncogenes.png')
-    plt.close('all')
-    for index, row in prostate_target_distance.iterrows():
-        tar_distance_mean.append(row.mean())
-    sorted_tar_distance_mean = sorted(tar_distance_mean, key=lambda f: float('-inf') if math.isnan(f) else f,reverse=True)
-    for index, row in prostate_non_distance.iterrows():
-        non_distance_mean.append(row.mean())
-    sorted_non_distance_mean = sorted(non_distance_mean, key=lambda f: float('-inf') if math.isnan(f) else f,reverse=True)
-    plt.figure(figsize=(12, 9))
-    x1 = np.linspace(0, 1, len(sorted_tar_distance_mean))
-    plt.plot(x1, sorted_tar_distance_mean, label='targets')
-    x2 = np.linspace(0, 1, len(sorted_non_distance_mean))
-    plt.plot(x2, sorted_non_distance_mean, label='non-targets')
-    plt.legend()
-    plt.xticks([0, 0.2, 0.4, 0.6, 0.8, 1], ['0', '20%', '40%', '60%', '80%', '100%'])
-    plt.xlabel('Node')
-    plt.title(f'Distance to Prostate Cancer Oncogenes')
-    plt.savefig(f'{cancer_comparison_path}/Distance to Prostate Cancer Oncogenes.png')
-    plt.close('all')
-    plt.figure(figsize=(12, 9))
-    plt.scatter(tar_distance_mean, tar_pdist_mean, label='target')
-    n = range(len(nontar_in_network))
-    n_list = [*n]
-    random_pos = random.sample(n_list,len(target_in_network))
-    distance_sample = []
-    pdist_sample = []
-    for i in random_pos:
-        distance_sample.append(non_distance_mean[i])
-        pdist_sample.append(non_pdist_mean[i])
-    plt.scatter(distance_sample, pdist_sample, label='non-target')
-    plt.ylabel('Pdist')
-    plt.xlabel('Distance')
-    plt.title('Prostate Cancer')
-    plt.legend()
-    plt.savefig(f'{cancer_comparison_path}/Pdist vs Distance (Prostate Cancer).png')
+# use boxplot of distance and pdistance to compare targets and non-targets in cancer subtypes
+# target/nontarget_df_ is the distance/pdist dataframe for targets/nontargets,
+# cancertype is 'Prostate Cancer'/'Breast Cancer', featurename is 'Distance'/'Pdistance'
+def box_plot(target_df_, nontarget_df_, cancertype_, featurename_, targets):
+    # we remove data of all the pairs of nodes which have no connections when plotting boxplots
+    # that is, remove all the pairs of nodes whose distance = 0 or pdistance = 12.5129
+    if featurename_ == 'PDistance':
+        target_df_ = target_df_.replace(12.5129,
+                                        np.NaN)  # replace 12.5129 with NaN so that the data will not be plotted
+        nontarget_df_ = nontarget_df_.replace(12.5129, np.NaN)
+    # we remove data of all the (drug target, oncogene) pairs where the target and the oncogene are the same
+    for df in [target_df_, nontarget_df_]:
+        for i in df.index:
+            for c in df.columns:
+                if i == c:  # if target name == oncogene name, replace the value with NaN
+                    df.replace(df.loc[i, c], np.NaN, inplace=True)
+    # record the percentage of NaN values (the percentage of targets/nontargets with no connections to oncogenes)
+    # and the percentage of outliers (values > Q3 + 1.5IQR)
+    target_stat = pd.DataFrame(columns=['NaN', 'NaN %', 'outliers', 'outlier %'], index=target_df_.columns)
+    non_stat = pd.DataFrame(columns=['NaN', 'NaN %', 'outliers', 'outlier %'], index=nontarget_df_.columns)
+    # in target genes
+    for index, row in target_df_.transpose().iterrows():
+        nan_no = row.isna().sum()  # count the number of NaN values
+        target_stat.loc[index, 'NaN'] = nan_no
+        iqr = row.quantile(0.75) - row.quantile(0.25)  # IQR(Interquartile range) = third Quartile - first Quartile
+        upper = min(row.quantile(0.75) + 1.5 * iqr, row.max())  # upper limit of the boxplot = 3rd quartile + 1.5iqr
+        lower = max(row.quantile(0.25) - 1.5 * iqr, row.min())  # lower limit of the boxplot = 1st quartile - 1.5iqr
+        # datas beyond the upper and lower limit are called outliers
+        outlier_no = row[(row < lower) | (row > upper)].count()  # count the number of outliers
+        target_stat.loc[index, 'outliers'] = outlier_no
+        target_stat.loc[index, 'NaN %'] = '{:.2%}'.format(nan_no / len(row))
+        target_stat.loc[index, 'outlier %'] = '{:.2%}'.format(outlier_no / (len(row) - nan_no))
+    # in nontarget genes
+    for index, row in nontarget_df_.transpose().iterrows():
+        nan_no = row.isna().sum()
+        non_stat.loc[index, 'NaN'] = nan_no
+        iqr = row.quantile(0.75) - row.quantile(0.25)  # IQR(Interquartile range) = third Quartile - first Quartile
+        upper = min(row.quantile(0.75) + 1.5 * iqr, row.max())  # upper limit of the boxplot = 3rd quartile + 1.5iqr
+        lower = max(row.quantile(0.25) - 1.5 * iqr, row.min())  # lower limit of the boxplot = 1st quartile - 1.5iqr
+        # datas beyond the upper and lower limit are called outliers
+        outlier_no = row[(row < lower) | (row > upper)].count()  # count the number of outliers
+        non_stat.loc[index, 'outliers'] = outlier_no
+        non_stat.loc[index, 'NaN %'] = '{:.2%}'.format(nan_no / len(row))
+        non_stat.loc[index, 'outlier %'] = '{:.2%}'.format(outlier_no / (len(row) - nan_no))
+    # write the summary of NaN values and outliers to txt files
+    target_stat.to_csv(f'{cancer_comparison_path}//{cancertype_} targets {featurename_} statistics.txt',
+                       sep='\t', header=True, index=True)
+    non_stat.to_csv(f'{cancer_comparison_path}//{cancertype_} non targets {featurename_} statistics.txt',
+                    sep='\t', header=True, index=True)
 
-    # breast cancer
-    tar_pdist_mean = []
-    non_pdist_mean = []
-    tar_distance_mean = []
-    non_distance_mean = []
-    for index, row in bc_target_pdist.iterrows():
-        tar_pdist_mean.append(row.mean())
-    sorted_tar_pdist_mean = sorted(tar_pdist_mean, key=lambda f: float('-inf') if math.isnan(f) else f,reverse=True)
-    for index, row in bc_non_pdist.iterrows():
-        non_pdist_mean.append(row.mean())
-    sorted_non_pdist_mean = sorted(non_pdist_mean, key=lambda f: float('-inf') if math.isnan(f) else f,reverse=True)
-    plt.figure(figsize=(12, 9))
-    x1 = np.linspace(0, 1, len(sorted_tar_pdist_mean))
-    plt.plot(x1, sorted_tar_pdist_mean, label='targets')
-    x2 = np.linspace(0, 1, len(sorted_non_pdist_mean))
-    plt.plot(x2, sorted_non_pdist_mean, label='non-targets')
-    plt.legend()
-    plt.xticks([0, 0.2, 0.4, 0.6, 0.8, 1], ['0', '20%', '40%', '60%', '80%', '100%'])
-    plt.xlabel('Node')
-    plt.title(f'PDist to Breast Cancer Oncogenes')
-    plt.savefig(f'{cancer_comparison_path}/PDist to Breast Cancer Oncogenes.png')
-    plt.close('all')
-    for index, row in bc_target_distance.iterrows():
-        tar_distance_mean.append(row.mean())
-    sorted_tar_distance_mean = sorted(tar_distance_mean, key=lambda f: float('-inf') if math.isnan(f) else f,reverse=True)
-    for index, row in bc_non_distance.iterrows():
-        non_distance_mean.append(row.mean())
-    sorted_non_distance_mean = sorted(non_distance_mean, key=lambda f: float('-inf') if math.isnan(f) else f,reverse=True)
-    plt.figure(figsize=(12, 9))
-    x1 = np.linspace(0, 1, len(sorted_tar_distance_mean))
-    plt.plot(x1, sorted_tar_distance_mean, label='targets')
-    x2 = np.linspace(0, 1, len(sorted_non_distance_mean))
-    plt.plot(x2, sorted_non_distance_mean, label='non-targets')
-    plt.legend()
-    plt.xticks([0, 0.2, 0.4, 0.6, 0.8, 1], ['0', '20%', '40%', '60%', '80%', '100%'])
-    plt.xlabel('Node')
-    plt.title(f'Distance to Breast Cancer Oncogenes')
-    plt.savefig(f'{cancer_comparison_path}/Distance to Breast Cancer Oncogenes.png')
-    plt.close('all')
-    plt.figure(figsize=(12, 9))
-    plt.scatter(tar_distance_mean, tar_pdist_mean, label='target')
-    n = range(len(nontar_in_network))
-    n_list = [*n]
-    random_pos = random.sample(n_list, len(target_in_network))
-    distance_sample = []
-    pdist_sample = []
-    for i in random_pos:
-        distance_sample.append(non_distance_mean[i])
-        pdist_sample.append(non_pdist_mean[i])
-    plt.scatter(distance_sample, pdist_sample, label='non-target')
-    plt.ylabel('Pdist')
-    plt.xlabel('Distance')
-    plt.title('Breast Cancer')
-    plt.legend()
-    plt.savefig(f'{cancer_comparison_path}/Pdist vs Distance (Breast Cancer).png')
+    whole_df = pd.concat([target_df_, nontarget_df_])  # concatenate the both targets and nontargets dataframes into one
+    # the argument of cancertype is 'Prostate Cancer'/'Breast Cancer'
+    # choose the data according to the cancertype argument
 
-target_info = pd.read_csv(r'D:\Hogswart\Output\Signaling Network\target\whole_signaling\Targeted Genes '
-                          r'Info_whole_signaling.txt',sep='\t',header=0,index_col=0)
-nontar_info = pd.read_csv(r'D:\Hogswart\Output\Signaling Network\target\whole_signaling\Non-Targeted Genes '
-                          r'Info_whole_signaling.txt',sep='\t',header=0,index_col=0)
-def pdist_vs_other():
+    for u in whole_df.index:  # in whole_df, add a columns called 'type' to record whether the gene is a target
+        if u in targets:
+            whole_df.loc[u, 'type'] = 'Targets'
+        else:
+            whole_df.loc[u, 'type'] = 'Non-Targets'
+    # start plotting
+    plt.figure(figsize=(16, 9))
+    sns.stripplot(x='variable', y='value', hue='type', data=pd.melt(whole_df, id_vars='type'),
+                  jitter=0.1, alpha=0.5, size=2, dodge=True)  # the scatter plot of all the values
+    ax = sns.boxplot(x='variable', y='value', hue='type', data=pd.melt(whole_df, id_vars='type'),
+                     medianprops=dict(color='red'),
+                     showmeans=True, meanline=True, meanprops={'color': 'red', 'ls': ':'})  # boxplot
+
+    handles, labels = ax.get_legend_handles_labels()
+    l = plt.legend(handles[0:2], labels[0:2], loc='upper center', ncol=2, frameon=False)  # legend
+    plt.xlabel('oncogenes')
+    plt.ylabel(featurename_)
+    plt.xticks(rotation=30)  # rotate the xtick labels
+    plt.title(f'{featurename_} for {cancertype_}')
+    plt.tight_layout()
+    plt.savefig(f'{cancer_comparison_path}//{featurename_} for {cancertype_}')
+    plt.close()
 
 
-    # prostate cancer
-    tar_pdist_mean = []
-    non_pdist_mean = []
-    for index, row in prostate_target_pdist.iterrows():
-        tar_pdist_mean.append(row.mean())
-    for index, row in prostate_non_pdist.iterrows():
-        non_pdist_mean.append(row.mean())
-    for feature in ['Degree Centrality','Eigenvector Centrality','Closeness Centrality','Betweenness Centrality','Pagerank']:
-        plt.figure()
-        plt.scatter(tar_pdist_mean,target_info.loc[prostate_target_pdist.index.tolist(),'Degree Centrality'],label='Targets')
-        plt.scatter(non_pdist_mean,nontar_info.loc[prostate_non_pdist.index.tolist(),'Degree Centrality'],label='Non Targets',alpha=0.2)
-        plt.xlabel('Pdist')
-        plt.ylabel(f'{feature}')
-        plt.title(f'pdist vs {feature} (Prostate Cancer)')
-        plt.legend()
-        plt.savefig(f'D:\\Hogswart\\Output\\Signaling Network\\cancer_subtype\\pdist vs {feature} (Prostate Cancer).png')
+# scatterplot of distance/pdistance mean vs other topolotical features(degree,eigenvector centrality...)
+def scatter_plot(target_df_, nontarget_df_, featurename_, cancertype_):
+    # we remove data of all the pairs of nodes which have no connections when plotting boxplots
+    # that is, remove all the pairs of nodes whose distance = 0 or pdistance = 12.5129
+    if featurename_ == 'PDistance':
+        target_df_ = target_df_.replace(12.5129,
+                                        np.NaN)  # replace 12.5129 with NaN so that the data will not be plotted
+        nontarget_df_ = nontarget_df_.replace(12.5129, np.NaN)
+    # we remove data of all the (drug target, oncogene) pairs where the target and the oncogene are the same
+    for df in [target_df_, nontarget_df_]:
+        for i in df.index:
+            for c in df.columns:
+                if i == c:  # if target name == oncogene name, replace the value with NaN
+                    df.replace(df.loc[i, c], np.NaN, inplace=True)
+    # compute the average pdistance or distance
+    target_mean = target_df_.mean(axis=1)  # compute mean value for distance and pdistance
+    non_mean = nontarget_df_.mean(axis=1)
+    # read topological features (degree centrality ...) from txt files
+    all_info = pd.read_csv(f'{whole_target_path}\\All Genes Info_whole_signaling.txt', sep='\t', header=0, index_col=0)
+    # for each feature, output a scatter plot
+    for centrality in ['Betweenness Centrality', 'Degree Centrality',
+                       'Pagerank', 'Eigenvector Centrality', 'Closeness Centrality']:
+        target_centrality = all_info.loc[target_mean.index, centrality]
+        non_centrality = all_info.loc[non_mean.index, centrality]
+        fig = plt.figure()
+        plt.scatter(target_mean, target_centrality)  # plot scatter for targets
+        plt.title(f'{featurename_} vs {centrality} for {cancertype_} targets')
+        plt.ylabel(f'{centrality}')
+        plt.xlabel(f'{featurename_}')
+        plt.savefig(f'{cancer_comparison_path}/{featurename_} vs {centrality} for {cancertype_} targets')
+        plt.close()
+        fig2 = plt.figure()
+        plt.scatter(non_mean, non_centrality)  # plot scatter for nontargets
+        plt.title(f'{featurename_} vs {centrality} for {cancertype_} non-targets')
+        plt.ylabel(f'{centrality}')
+        plt.xlabel(f'{featurename_}')
+        plt.savefig(f'{cancer_comparison_path}/{featurename_} vs {centrality} for {cancertype_} non-targets')
         plt.close()
 
-    # breast cancer
-    tar_pdist_mean = []
-    non_pdist_mean = []
-    for index, row in bc_target_pdist.iterrows():
-        tar_pdist_mean.append(row.mean())
-    for index, row in bc_non_pdist.iterrows():
-        non_pdist_mean.append(row.mean())
-    for feature in ['Degree Centrality', 'Eigenvector Centrality', 'Closeness Centrality', 'Betweenness Centrality',
-                    'Pagerank']:
-        plt.figure()
-        plt.scatter(tar_pdist_mean, target_info.loc[bc_target_pdist.index.tolist(), 'Degree Centrality'],
-                    label='Targets')
-        plt.scatter(non_pdist_mean, nontar_info.loc[bc_non_pdist.index.tolist(), 'Degree Centrality'],
-                    label='Non Targets', alpha=0.2)
-        plt.xlabel('Pdist')
-        plt.ylabel(f'{feature}')
-        plt.title(f'pdist vs {feature} (Breast Cancer)')
-        plt.legend()
-        plt.savefig(f'D:\\Hogswart\\Output\\Signaling Network\\cancer_subtype\\pdist vs {feature} (Breast Cancer).png')
-        plt.close()
-def distance_vs_other():
-    # prostate cancer
-    tar_distance_mean = []
-    non_distance_mean = []
-    for index, row in prostate_target_distance.iterrows():
-        tar_distance_mean.append(row.mean())
-    for index, row in prostate_non_distance.iterrows():
-        non_distance_mean.append(row.mean())
 
-    for feature in ['Degree Centrality', 'Eigenvector Centrality', 'Closeness Centrality', 'Betweenness Centrality',
-                    'Pagerank']:
-        plt.figure()
-        plt.scatter(tar_distance_mean, target_info.loc[prostate_target_distance.index.tolist(), 'Degree Centrality'],
-                    label='Targets')
-        plt.scatter(non_distance_mean, nontar_info.loc[prostate_non_distance.index.tolist(), 'Degree Centrality'],
-                    label='Non Targets', alpha=0.2)
-        plt.xlabel('Distance')
-        plt.ylabel(f'{feature}')
-        plt.title(f'Distance vs {feature} (Prostate Cancer)')
-        plt.legend()
-        plt.savefig(f'D:\\Hogswart\\Output\\Signaling Network\\cancer_subtype\\Distance vs {feature} (Prostate Cancer).png')
-
-    # Breast Cancer
-    tar_distance_mean = []
-    non_distance_mean = []
-    for index, row in bc_target_distance.iterrows():
-        tar_distance_mean.append(row.mean())
-    for index, row in bc_non_distance.iterrows():
-        non_distance_mean.append(row.mean())
-
-    for feature in ['Degree Centrality', 'Eigenvector Centrality', 'Closeness Centrality', 'Betweenness Centrality',
-                    'Pagerank']:
-        plt.figure()
-        plt.scatter(tar_distance_mean, target_info.loc[bc_target_distance.index.tolist(), 'Degree Centrality'],
-                    label='Targets')
-        plt.scatter(non_distance_mean, nontar_info.loc[bc_non_distance.index.tolist(), 'Degree Centrality'],
-                    label='Non Targets', alpha=0.2)
-        plt.xlabel('Distance')
-        plt.ylabel(f'{feature}')
-        plt.title(f'Distance vs {feature} (Breast Cancer)')
-        plt.legend()
-        plt.savefig(
-            f'D:\\Hogswart\\Output\\Signaling Network\\cancer_subtype\\Distance vs {feature} (Breast Cancer).png')
+# plot scatter plot of pdistance vs distance for targets and non targets in cancer subtype
+def pdist_vs_distance(target_pdist_df, non_pdist_df, target_distance_df, non_distance_df, cancertype):
+    target_pdist_df = target_pdist_df.replace(12.5129, np.NaN)
+    non_pdist_df = non_pdist_df.replace(12.5129, np.NaN)
+    for df in [target_pdist_df, non_pdist_df, target_distance_df, non_distance_df]:
+        for i in df.index:
+            for c in df.columns:
+                if i == c:
+                    df.replace(df.loc[i, c], np.NaN, inplace=True)
+    target_pdist_mean = target_pdist_df.mean(axis=1)  # compute mean values
+    non_pdist_mean = non_pdist_df.mean(axis=1)  # compute mean values for pdist
+    target_distance_mean = target_distance_df.mean(axis=1)  # compute mean values
+    non_distance_mean = non_distance_df.mean(axis=1)  # compute mean values for distance
+    plt.figure()
+    plt.scatter(target_distance_mean, target_pdist_mean)  # plot distance vs pdistance for targets
+    plt.ylabel('pdistance')
+    plt.xlabel('distance')
+    plt.title(f'pdistance vs distance for {cancertype} targets')
+    plt.savefig(f'{cancer_comparison_path}/pdistance vs distance for {cancertype} targets')  # save plot
+    plt.close()
+    plt.figure()
+    plt.scatter(non_distance_mean, non_pdist_mean)  # plot distance vs pdistance for nontargets
+    plt.ylabel('pdistance')
+    plt.xlabel('distance')
+    plt.title(f'pdistance vs distance for {cancertype} non-targets')
+    plt.savefig(f'{cancer_comparison_path}/pdistance vs distance for {cancertype} non-targets')  # save plot
+    plt.close()
