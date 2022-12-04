@@ -3,8 +3,8 @@ from scipy import stats
 import pandas as pd
 import numpy as np
 # read data
-neutral_path = r'D:\Hogswart\Output\Neutral\statistics\whole_neutral'
-signaling_path = r'D:\Hogswart\Output\Signaling Network\statistics\whole_signaling'
+neutral_path = r'D:\Hogwarts\Output\Neutral\statistics\whole_neutral'
+signaling_path = r'D:\Hogwarts\Output\Signaling Network\statistics\whole_signaling'
 signal_betweenness = pd.read_csv(f'{signaling_path}/whole_signaling_sorted betweenness centrality.txt',
                                  sep='\t', header=None)
 signal_closeness = pd.read_csv(f'{signaling_path}/whole_signaling_sorted closeness centrality.txt',
@@ -43,7 +43,7 @@ print(stats.normaltest(signal_closeness.iloc[0:4276,1]))
 #neutral eigenvector
 large = neutral_eigen.iloc[0:75,0]
 import networkx as nx
-g = nx.read_gexf(r'D:\Hogswart\Output\Neutral\whole_neutral.gexf')
+g = nx.read_gexf(r'D:\Hogwarts\Output\Neutral\whole_neutral.gexf')
 # for u in large:
 #     temp = list(g.out_edges(u,data=True))
 #     for neigh in temp:
@@ -57,7 +57,7 @@ for u,v,data in g.edges(data = True):
         phy.append(v)
 phy = list(set(phy))
 node_neu=[]
-gsig = nx.read_gexf(r'D:\Hogswart\Output\Signaling Network\whole_signaling.gexf')
+gsig = nx.read_gexf(r'D:\Hogwarts\Output\Signaling Network\whole_signaling.gexf')
 # for u in g.nodes():
 #     if u not in gsig.nodes():
 #         node_neu.append(u)
@@ -88,7 +88,7 @@ import matplotlib.pyplot as plt
 plt.figure()
 for i in range(9):
     alpha = (i+1)/10
-    with open(f'D:\\Hogswart\\Output\\Signaling Network\\target\\whole_signaling\\pdist\\alpha '
+    with open(f'D:\\Hogwarts\\Output\\Signaling Network\\target\\whole_signaling\\pdist\\alpha '
               f'= {alpha}\\target\\cancer_genes_pdist_mean.txt','r') as f:
         temp_dict = f.read()
     f.close()
