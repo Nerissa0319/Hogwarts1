@@ -28,9 +28,9 @@ def main():
     is_target_distance_plot = False  # plot mean value of distance between targets/non-targets and cancer/disease genes
     is_target_test = False  # perform K-S test to check whether targets and non targets are stastitically different
 
-    is_add_random = False  # add random edges
-    is_remove_random = False  # remove random edges
-    is_cancer_comparison = True  # compare all topological features in different cancer subtypes
+    is_add_random = True  # add random edges
+    is_remove_random = True  # remove random edges
+    is_cancer_comparison = False # compare all topological features in different cancer subtypes
     if is_create:
         import HogwartsCreate as cr
         cr.create_whole_signaling()  # create signaling networks without neural links and add attributes to nodes
