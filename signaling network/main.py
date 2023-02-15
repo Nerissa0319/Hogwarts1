@@ -17,20 +17,16 @@ def main():
     # DO NOT DELETE ppr folder under Output, it will take quite a long time to compute the ppr for all networkx
     # KEEP FALSE
     is_compute_PDist = False
-
     # KEEP FALSE
     is_distance = False  # whether to compute shortest_distance of each network
-
     is_target_info = False  # whether to extract the information of targeted genes
     is_target_chart = False  # whether to plot the degree, eigen, etc. of targeted genes
-
     is_target_pdist_plot = False  # plot mean value of dppr between targets/non-targets and cancer/disease genes
     is_target_distance_plot = False  # plot mean value of distance between targets/non-targets and cancer/disease genes
     is_target_test = False  # perform K-S test to check whether targets and non targets are stastitically different
-
-    is_add_random = True  # add random edges
-    is_remove_random = True  # remove random edges
-    is_cancer_comparison = False # compare all topological features in different cancer subtypes
+    is_add_random = False  # add random edges
+    is_remove_random = False  # remove random edges
+    is_cancer_comparison = True  # compare all topological features in different cancer subtypes
     if is_create:
         import HogwartsCreate as cr
         cr.create_whole_signaling()  # create signaling networks without neural links and add attributes to nodes
@@ -100,57 +96,46 @@ def main():
     if is_remove_random:
         import HogwartsRandom as hogRan
         for i in range(4):
-            percentage = 5 * (i + 1) / 100 # remove 5%, 10%, 15%, 20% edges
+            percentage = 5 * (i + 1) / 100  # remove 5%, 10%, 15%, 20% edges
             hogRan.run_remove(whole_signaling, percentage)
     if is_add_random:
         import HogwartsRandom as hogRan
         for i in range(4):
-            percentage = 5 * (i + 1) / 100 # add 5%, 10%, 15%, 20% edges
+            percentage = 5 * (i + 1) / 100  # add 5%, 10%, 15%, 20% edges
             hogRan.run_add(whole_signaling, percentage)
 
     if is_cancer_comparison:  # compare data in cancer subtype
         import HogwartsCanceType as cancer
-        breast_onco, prostate_onco, breast_target, prostate_target, breast_nontarget, prostate_nontarget = cancer.find_subgene(
-            whole_signaling)  # prepare oncogenes and targets for specific cancer type
+        tumour_type = 'prostate'
+        cancer_name = 'Prostate Cancer'  # the cancer we want to analyze
+        # tumour_type = 'breast'
+        # cancer_name = 'Breast Cancer'  # the cancer we want to analyze
+        onco1, target1, nontarget1 = cancer.find_subgene(whole_signaling, tumour_type, cancer_name)
+
         # if the txt files exist, read the files directly, else, run the function 'find_feature'
-        if not os.path.exists(f'{cancer_comparison_path}//prostate_cancer_target_distance.txt'):
-            cancer.find_feature(breast_onco, prostate_onco, breast_target, prostate_target, breast_nontarget,
-                                prostate_nontarget)  # find pdistance and distance for genes in cancer subtype
+        if not os.path.exists(f'{cancer_comparison_path}//{tumour_type}_cancer_target_distance.txt'):
+            cancer.find_feature(onco1, target1, nontarget1)  # find pdistance and distance for genes in cancer subtype
         # read the distance and pdistance from files
-        prostate_target_distance = pd.read_csv(f'{cancer_comparison_path}//prostate_cancer_target_distance.txt',
-                                               sep='\t', header=0, index_col=0)
-        prostate_non_distance = pd.read_csv(f'{cancer_comparison_path}//prostate_cancer_nontarget_distance.txt',
-                                            sep='\t', header=0, index_col=0)
-        prostate_target_pdist = pd.read_csv(f'{cancer_comparison_path}//prostate_cancer_target_pdistance.txt',
-                                            sep='\t', header=0, index_col=0)
-        prostate_non_pdist = pd.read_csv(f'{cancer_comparison_path}//prostate_cancer_nontarget_pdistance.txt',
-                                         sep='\t', header=0, index_col=0)
-        breast_target_distance = pd.read_csv(f'{cancer_comparison_path}//breast_cancer_target_distance.txt',
-                                             sep='\t', header=0, index_col=0)
-        breast_non_distance = pd.read_csv(f'{cancer_comparison_path}//breast_cancer_nontarget_distance.txt',
-                                          sep='\t', header=0, index_col=0)
-        breast_target_pdist = pd.read_csv(f'{cancer_comparison_path}//breast_cancer_target_pdistance.txt',
-                                          sep='\t', header=0, index_col=0)
-        breast_non_pdist = pd.read_csv(f'{cancer_comparison_path}//breast_cancer_nontarget_pdistance.txt',
-                                       sep='\t', header=0, index_col=0)
+        target_distance = pd.read_csv(f'{cancer_comparison_path}//{tumour_type}_cancer_target_distance.txt',
+                                      sep='\t', header=0, index_col=0)
+        non_distance = pd.read_csv(f'{cancer_comparison_path}//{tumour_type}_cancer_nontarget_distance.txt',
+                                   sep='\t', header=0, index_col=0)
+        target_pdist = pd.read_csv(f'{cancer_comparison_path}//{tumour_type}_cancer_target_pdistance.txt',
+                                   sep='\t', header=0, index_col=0)
+        non_pdist = pd.read_csv(f'{cancer_comparison_path}//{tumour_type}_cancer_nontarget_pdistance.txt',
+                                sep='\t', header=0, index_col=0)
+
         # use boxplot of distance and pdistance to compare targets and non-targets in cancer subtypes
         # target/nontarget_df_ is the distance/pdist dataframe for targets/nontargets,
         # cancertype is 'Prostate Cancer'/'Breast Cancer', featurename is 'Distance'/'Pdistance'
-        cancer.box_plot(prostate_target_distance, prostate_non_distance, 'Prostate Cancer', 'Distance', prostate_target)
-        cancer.box_plot(prostate_target_pdist, prostate_non_pdist, 'Prostate Cancer', 'PDistance', prostate_target)
-        cancer.box_plot(breast_target_distance, breast_non_distance, 'Breast Cancer', 'Distance', breast_target)
-        cancer.box_plot(breast_target_pdist, breast_non_pdist, 'Breast Cancer', 'PDistance', breast_target)
+        cancer.box_plot(target_distance, non_distance, cancer_name, 'Distance', target1)
+        cancer.box_plot(target_pdist, non_pdist, cancer_name, 'PDistance', target1)
         # scatterplot of distance/pdistance mean vs other topolotical features(degree,eigenvector centrality...)
-        cancer.scatter_plot(prostate_target_pdist, prostate_non_pdist, 'PDistance', 'Prostate Cancer')
-        cancer.scatter_plot(prostate_target_distance, prostate_non_distance, 'Distance', 'Prostate Cancer')
-        cancer.scatter_plot(breast_target_pdist, breast_non_pdist, 'PDistance', 'Breast Cancer')
-        cancer.scatter_plot(breast_target_distance, breast_non_distance, 'Distance', 'Breast Cancer')
+        cancer.scatter_plot(target_pdist, non_pdist, 'PDistance', cancer_name)
+        cancer.scatter_plot(target_distance, non_distance, 'Distance', cancer_name)
         # plot scatter plot of pdistance vs distance for targets and non targets in cancer subtype
-        cancer.pdist_vs_distance(prostate_target_pdist, prostate_non_pdist, prostate_target_distance,
-                                 prostate_non_distance,
-                                 'Prostate Cancer')
-        cancer.pdist_vs_distance(breast_target_pdist, breast_non_pdist, breast_target_distance, breast_non_distance,
-                                 'Breast Cancer')
+        cancer.pdist_vs_distance(target_pdist, non_pdist, target_distance,
+                                 non_distance, cancer_name)
 
 
 if __name__ == '__main__':
