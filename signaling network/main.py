@@ -3,9 +3,12 @@ import networkx as nx
 import pandas as pd
 from datetime import datetime
 from constant import *
-
+'''
+Execution File of Data Profiling for human signaling network
+'''
 
 def main():
+    # Change the variable 'is_xxx' to True to switch on the corresponding function, False to skip
     # for some time-consuming functions like ppr/distance computing, ALWAYS KEEP FALSE
     # after creating the network for the first time, switch to False
     # remember NOT TO DELETE any .gexf file in output folder

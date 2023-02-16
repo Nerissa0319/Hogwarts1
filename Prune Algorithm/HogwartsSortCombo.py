@@ -185,3 +185,4 @@ def sortByPdist(candidates, k, nodeset, targetset, cancer_network, cancer_name, 
                 known_targets[subset] = cs_df.T[subset]
     known_targets = known_targets.T
     known_targets.to_csv(f'{prune_path}//{cancer_name}//known_targets.csv', header=True, index=True, sep=',')
+

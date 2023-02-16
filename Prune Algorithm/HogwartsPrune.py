@@ -13,6 +13,7 @@ from HogwartsSortCombo import *
 from HogwartsSPdist import *
 from HogwartsSHallmark import *
 from HogwartsConstruct import *
+from SortAnalysis import *
 
 
 def prune(tumour_type,cancer_name,k):
@@ -46,6 +47,7 @@ def prune(tumour_type,cancer_name,k):
     for u in candidate3:
         if u in target1:
             t3_in_network += 1
+    analyze_prune(cancer_name,f'{prune_path}//{cancer_name}//known_targets.csv',f'{prune_path}//{cancer_name}//{k}set_combo.csv',k)
     # print basic information about the cancer
     with open(f'{prune_path}//{cancer_name}//basic_info.csv', 'w') as f:
         print('Cancer Subtype:{}'.format(cancer_name))
