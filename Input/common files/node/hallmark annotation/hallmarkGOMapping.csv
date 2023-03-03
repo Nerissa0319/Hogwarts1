@@ -1,0 +1,58 @@
+Hallmark,GO_id,GO_name,GO_type
+PROLIFERATION,GO:0008283,cell proliferation,biological process
+PROLIFERATION,GO:0016049,cell growth,biological process
+PROLIFERATION,GO:0007049,cell cycle,biological process
+PROLIFERATION,GO:0051301,cell division,biological process
+PROLIFERATION,GO:0008284,positive regulation of cell proliferation,biological process
+PROLIFERATION,GO:0030307,positive regulation of cell growth,biological process
+PROLIFERATION,GO:0045787,positive regulation of cell cycle,biological process
+PROLIFERATION,GO:0051781,positive regulation of cell dividion,biological process
+PROLIFERATION,GO:0032204,ABC,biological process
+GROWTH_REPRESSOR,GO:0009968,negative regulation of signal transduction,biological process
+GROWTH_REPRESSOR,GO:0008285,negative regulation of cell proliferation,biological process
+GROWTH_REPRESSOR,GO:0030308,negative regulation of cell growth,biological process
+GROWTH_REPRESSOR,GO:0045786,negative regulation of cell cycle,biological process
+GROWTH_REPRESSOR,GO:0051782,negative regulation of cell division,biological process
+APOPTOSIS,GO:0012501,programmed cell death,biological process
+APOPTOSIS,GO:0043067,regulation of programmed cell death,biological process
+REPLICATIVE_IMMORTALITY,GO:0090398,cellular senescence,biological process
+REPLICATIVE_IMMORTALITY,GO:0032200,telomere organization,biological process
+REPLICATIVE_IMMORTALITY,GO:0000723,telomere maintenance,biological process
+REPLICATIVE_IMMORTALITY,GO:0001302,replicative of cell aging,biological process
+REPLICATIVE_IMMORTALITY,GO:1900062,regulation of replicative cell aging,biological process
+REPLICATIVE_IMMORTALITY,GO:2000772,regulation of cellular senescence,biological process
+ANGIOGENESIS,GO:0001525,angiogenesis,biological process
+ANGIOGENESIS,GO:0045765,regulation of angiogenesis,biological process
+ANGIOGENESIS,GO:0001570,vasculogenesis,biological process
+ANGIOGENESIS,GO:2001212,regulation of vasculogenesis,biological process
+ANGIOGENESIS,GO:0008015,blood circulation,biological process
+METASTASIS,GO:0007155,cell adhesion,biological process
+METASTASIS,GO:0001837,epithelial-to-mesenchymal transition,biological process
+METASTASIS,GO:0016477,cell migration,biological process
+METASTASIS,GO:0030155,regulation of cell adhesion,biological process
+METASTASIS,GO:0030030,cell projection organization,biological process
+METASTASIS,GO:0030036,actin cytoskeleton organization,biological process
+METASTASIS,GO:0030030,cell projection organization,biological process
+METASTASIS,GO:0034330,cell junction organization,biological process
+METASTASIS,GO:0042330,taxis,biological process
+METASTASIS,GO:0007163,establishment or maintenance of cell polarity,biological process
+METABOLISM,GO:0006006,glucose metabolic process,biological process
+METABOLISM,GO:0046323,glucose import,biological process
+METABOLISM,GO:0006096,glycolysis,biological process
+METABOLISM,GO:0071456,cellular response to hypoxia,biological process
+IMMUNE_DESTRUCTION,GO:0006955,immune response,biological process
+IMMUNE_DESTRUCTION,GO:0002418,immune response to tumor cells,biological process
+IMMUNE_DESTRUCTION,GO:0002837,regulation of immune response to tumor cells,biological process
+IMMUNE_DESTRUCTION,GO:0020012,evasion or tolerance of host immune response,biological process
+IMMUNE_DESTRUCTION,GO:0006897,endocytosis,biological process
+GENOME_INSTABILITY,GO:0006281,DNA repair,biological process
+GENOME_INSTABILITY,GO:0031570,DNA integrity checkpoint,biological process
+GENOME_INSTABILITY,GO:0045005,maintenance of fidelity involved in DNA-dependent DNA replication,biological process
+GENOME_INSTABILITY,GO:0006282,regulation of DNA repair,biological process
+TUMOR_PROMOTING_INFLAMMATION,GO:0006954,inflammatory response,biological process
+TUMOR_PROMOTING_INFLAMMATION,GO:0002367,cytokine production involved in immune response,biological process
+TUMOR_PROMOTING_INFLAMMATION,GO:0002718,regulation of cytokine production involved in immune response,biological process
+TUMOR_PROMOTING_INFLAMMATION,GO:0042060,wound healing,biological process
+TUMOR_PROMOTING_INFLAMMATION,GO:0061041,regulation of wound healing,biological process
+TUMOR_PROMOTING_INFLAMMATION,GO:0050727,regulation of inflammatory response,biological process
+TUMOR_PROMOTING_INFLAMMATION,GO:0042533,tumor necrosis factor biosynthetic process,biological process

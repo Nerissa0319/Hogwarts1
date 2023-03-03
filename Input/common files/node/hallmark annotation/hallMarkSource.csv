@@ -1,0 +1,6 @@
+source_name,source_url,source_param
+Others,<v>,1
+OMIM,http://www.omim.org/entry/<v>,1
+UniProt,http://www.uniprot.org/uniprot/<v>,1
+Entrez,http://www.ncbi.nlm.nih.gov/gene/?term=<v>,1
+GO,http://amigo.geneontology.org/amigo/search/ontology?q=<v>,1

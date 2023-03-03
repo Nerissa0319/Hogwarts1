@@ -1,0 +1,32 @@
+rate id,organism,cell line,source name,rate parameter,rate id
+1,Cricetulus griseus,CHO cell,BioModels_Rates,<v1><v2>,<BIOMD0000000146><15>
+2,Cricetulus griseus,CHO cell,BioModels_Rates,<v1><v2>,<BIOMD0000000146><17>
+3,Homo sapiens,MCF-7 breast cancer cell,BioModels_Rates,<v1><v2>,<BIOMD0000000175><39>
+4,Homo sapiens,MCF-7 breast cancer cell,BioModels_Rates,<v1><v2>,<BIOMD0000000175><15>
+5,Homo sapiens,MCF-7 breast cancer cell,BioModels_Rates,<v1><v2>,<BIOMD0000000175><42>
+6,Homo sapiens,MCF-7 breast cancer cell,BioModels_Rates,<v1><v2>,<BIOMD0000000175><19>
+7,Homo sapiens,MCF-7 breast cancer cell,BioModels_Rates,<v1><v2>,<BIOMD0000000175><22>
+8,Homo sapiens,MCF-7 breast cancer cell,BioModels_Rates,<v1><v2>,<BIOMD0000000175><30>
+9,Homo sapiens,MCF-7 breast cancer cell,BioModels_Rates,<v1><v2>,<BIOMD0000000175><41>
+10,Homo sapiens,MCF-7 breast cancer cell,BioModels_Rates,<v1><v2>,<BIOMD0000000175><40>
+11,Homo sapiens,MCF-7 breast cancer cell,BioModels_Rates,<v1><v2>,<BIOMD0000000175><21>
+12,Homo sapiens,MCF-7 breast cancer cell,BioModels_Rates,<v1><v2>,<BIOMD0000000175><25>
+13,Homo sapiens,MCF-7 breast cancer cell,BioModels_Rates,<v1><v2>,<BIOMD0000000175><18>
+14,Homo sapiens,MCF-7 breast cancer cell,BioModels_Rates,<v1><v2>,<BIOMD0000000175><29>
+15,Homo sapiens,MCF-7 breast cancer cell,BioModels_Rates,<v1><v2>,<BIOMD0000000175><33>
+16,Cricetulus griseus,CHO cell,BioModels_Rates,<v1><v2>,<BIOMD0000000146><14>
+17,Cricetulus griseus,CHO cell,BioModels_Rates,<v1><v2>,<BIOMD0000000146><16>
+18,Homo sapiens,MCF-7 breast cancer cell,BioModels_Rates,<v1><v2>,<BIOMD0000000175><94>
+19,Homo sapiens,MCF-7 breast cancer cell,BioModels_Rates,<v1><v2>,<BIOMD0000000175><95>
+20,Homo sapiens,MCF-7 breast cancer cell,BioModels_Rates,<v1><v2>,<BIOMD0000000175><96>
+21,Homo sapiens,MCF-7 breast cancer cell,BioModels_Rates,<v1><v2>,<BIOMD0000000175><97>
+22,Cricetulus griseus,CHO cell,BioModels_Rates,<v1><v2>,<BIOMD0000000146><18>
+23,Cricetulus griseus,CHO cell,BioModels_Rates,<v1><v2>,<BIOMD0000000146><20>
+24,Cricetulus griseus,CHO cell,BioModels_Rates,<v1><v2>,<BIOMD0000000146><13>
+25,Cricetulus griseus,CHO cell,BioModels_Rates,<v1><v2>,<BIOMD0000000146><32>
+26,Cricetulus griseus,CHO cell,BioModels_Rates,<v1><v2>,<BIOMD0000000146><12>
+27,Homo sapiens,MCF-7 breast cancer cell,BioModels_Rates,<v1><v2>,<BIOMD0000000175><51>
+28,Homo sapiens,MCF-7 breast cancer cell,BioModels_Rates,<v1><v2>,<BIOMD0000000175><50>
+29,Cricetulus griseus,CHO cell,BioModels_Rates,<v1><v2>,<BIOMD0000000146><31>
+30,Cricetulus griseus,CHO cell,BioModels_Rates,<v1><v2>,<BIOMD0000000146><26>
+31,Cricetulus griseus,CHO cell,BioModels_Rates,<v1><v2>,<BIOMD0000000146><29>
