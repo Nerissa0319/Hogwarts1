@@ -19,28 +19,28 @@ def jaccard_binary(x, y):
     return similarity
 
 
-def sortByPdist(candidates, k, nodeset, targetset, cancer_network, cancer_name, m):  # sort the candidate combination
+def sortCombo(candidates, k,cancer_genes,nodetype, targetset, cancer_network, cancer_name, m):  # sort the candidate combination
     import HogwartsHallmarkAnalysis as hallmark
     # remove the nodes not in the cancer network
-    temp = nodeset.copy()
+    temp = cancer_genes.copy()
     for u in temp:
         if u not in cancer_network.nodes():
-            nodeset.remove(u)
+            cancer_genes.remove(u)
     targets = targetset.copy()
     for u in targets:
         if u not in cancer_network.nodes():
             targetset.remove(u)
     # import pdist dataset
-    cancer_pdist_path = f'{prune_path}/{cancer_name}/pdist/alpha = 0.2'
-    cancer_dist_path = f'{prune_path}/{cancer_name}/distance'
+    cancer_pdist_path = f'{prune_path}/{cancer_name}_{nodetype}/pdist/alpha = 0.2'
+    cancer_dist_path = f'{prune_path}/{cancer_name}_{nodetype}/distance'
     pdist_df = pd.read_csv(f'{cancer_pdist_path}/pdist.txt', sep='\t', index_col=0, header=0)
     dist_df = pd.read_csv(f'{cancer_dist_path}/distance.txt', sep='\t', index_col=0, header=0)
-    oncogene_pdist = pdist_df.loc[:, nodeset] # pdistance to oncogenes
+    cancergene_pdist = pdist_df.loc[:, cancer_genes] # pdistance to cancergenes
     othernodes = []
     for u in cancer_network.nodes():
-        if u not in nodeset:
+        if u not in cancer_genes:
             othernodes.append(u)
-    other_pdist = pdist_df.loc[:, othernodes] # pdistance to other nodes except oncogenes
+    other_pdist = pdist_df.loc[:, othernodes] # pdistance to other nodes except cancergenes
     # analyze the hallmarks of known drug targets
     # for each drug with k targets for the input cancer type
     # compute jaccard similarity index for each pair of targets of this drug
@@ -68,7 +68,7 @@ def sortByPdist(candidates, k, nodeset, targetset, cancer_network, cancer_name, 
         for t in temp_target1:
             if t not in cancer_network.nodes():
                 temp_target.remove(t) # remove drug targets not in cancer network
-        po1 = [] # pdistance to oncogenes
+        po1 = [] # pdistance to cancergenes
         pr1 = [] # pdistance to other genes
         if len(temp_target) > 0: # for drugs with at least 1 target
             # compute the similarity of each pair of targets in the current drug
@@ -90,13 +90,13 @@ def sortByPdist(candidates, k, nodeset, targetset, cancer_network, cancer_name, 
         temp_distance = []
         if len(temp_target) > 0:
             for t in temp_target:
-                po1.append(mean(oncogene_pdist.loc[t, :]))
+                po1.append(mean(cancergene_pdist.loc[t, :]))
                 pr1.append(mean(other_pdist.loc[t, :]))
             if (len(po1) > 0) and (len(pr1) > 0):
                 mean_po = mean(po1)
                 mean_pr = mean(pr1)
-                diff = mean_pr - mean_po  # difference between pdistance to oncogenes and other nodes
-                drug_summary.loc[drug, 'pdist_to_oncogenes'] = mean_po
+                diff = mean_pr - mean_po  # difference between pdistance to cancergenes and other nodes
+                drug_summary.loc[drug, 'pdist_to_cancergenes'] = mean_po
                 drug_summary.loc[drug, 'pdist_to_othergenes'] = mean_pr
                 drug_summary.loc[drug, 'pdist_score'] = (diff ** 2) / mean_po
 
@@ -108,10 +108,10 @@ def sortByPdist(candidates, k, nodeset, targetset, cancer_network, cancer_name, 
         # overlapping
         overlapping_count = 0
         for t in temp_target:
-            if t in nodeset:
+            if t in cancer_genes:
                 overlapping_count += 1
         drug_summary.loc[drug, 'overlapping count'] = overlapping_count
-    drug_summary.to_csv(f'{prune_path}//{cancer_name}//drug_summary.csv', header=True, index=True, sep=',')
+    drug_summary.to_csv(f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_drug_summary.csv', header=True, index=True, sep=',')
     # total_score = pd.DataFrame(index=drug_hallmark_k.index)
     # for drug in drug_hallmark_k.index:
     #     total_score.loc[drug, 'similarity_score'] = target_similarity.loc[drug, 'Mean Similarity']
@@ -125,7 +125,7 @@ def sortByPdist(candidates, k, nodeset, targetset, cancer_network, cancer_name, 
     #
     # total_mean = total_score.loc[:, 'total_score'].mean()
 
-    pdist_oncogenes = {}
+    pdist_cancergenes = {}
     pdist_othergenes = {}
     pdist_scores = {}
     similarity_scores = {}
@@ -141,22 +141,22 @@ def sortByPdist(candidates, k, nodeset, targetset, cancer_network, cancer_name, 
             h1_h2 = jaccard_binary(h1, h2)  # compute similarity
             temp_similarity1.append(h1_h2)  # add the similarity to the temp dataframe
         similarity_scores[subset] = statistics.mean(temp_similarity1)  # compute the mean
-        po = []  # pdistance to oncogenes
+        po = []  # pdistance to cancergenes
         pr = []  # pdistance to rest genes
         distance_1 = []
         overlapping_count1 = 0
         for u in subset:
-            po.append(mean(oncogene_pdist.loc[u, :]))
+            po.append(mean(cancergene_pdist.loc[u, :]))
             pr.append(mean(other_pdist.loc[u, :]))
-            if u in nodeset:
+            if u in cancer_genes:
                 overlapping_count1 += 1
             for v in subset:
                 distance_1.append(dist_df.loc[u, v])
         mean_po = mean(po)
         mean_pr = mean(pr)
-        diff = mean_pr - mean_po  # difference between pdistance to oncogenes and other nodes
+        diff = mean_pr - mean_po  # difference between pdistance to cancergenes and other nodes
         mean_distance = mean(distance_1)
-        pdist_oncogenes[subset] = mean_po
+        pdist_cancergenes[subset] = mean_po
         pdist_othergenes[subset] = mean_pr
         pdist_scores[subset] = (diff ** 2) / mean_po
         distance_scores[subset] = mean_distance
@@ -166,11 +166,11 @@ def sortByPdist(candidates, k, nodeset, targetset, cancer_network, cancer_name, 
         print(f'{count},{subset}')
 
     cs_df = pd.concat([pd.Series(d) for d in
-                       [similarity_scores, pdist_scores, pdist_oncogenes, pdist_othergenes, distance_scores,
+                       [similarity_scores, pdist_scores, pdist_cancergenes, pdist_othergenes, distance_scores,
                         overlapping_scores]], axis=1)
-    cs_df.columns = ['similarity', 'pdist', 'pdist_oncogenes', 'pdist_othergenes', 'distance', 'overlapping']
-    cs_df.to_csv(f'{prune_path}//{cancer_name}//{k}set_combo.csv', header=True, index=True, sep=',')
-    # cs_df = pd.read_csv(f'{prune_path}//{cancer_name}//{k}set_combo.csv', header=0, index_col=[0,1], sep=',')
+    cs_df.columns = ['similarity', 'pdist', 'pdist_cancergenes', 'pdist_othergenes', 'distance', 'overlapping']
+    cs_df.to_csv(f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_{k}set_combo.csv', header=True, index=True, sep=',')
+    # cs_df = pd.read_csv(f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_{k}set_combo.csv', header=0, index_col=[0,1], sep=',')
     known_targets = pd.DataFrame()
     for drug in drug_hallmark_k.index:
         temp_target1 = hallmark.drug_targets.loc[
@@ -184,5 +184,5 @@ def sortByPdist(candidates, k, nodeset, targetset, cancer_network, cancer_name, 
             if subset in cs_df.index:
                 known_targets[subset] = cs_df.T[subset]
     known_targets = known_targets.T
-    known_targets.to_csv(f'{prune_path}//{cancer_name}//known_targets.csv', header=True, index=True, sep=',')
+    known_targets.to_csv(f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_known_targets.csv', header=True, index=True, sep=',')
 
