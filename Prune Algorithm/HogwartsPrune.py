@@ -87,7 +87,7 @@ def prune(cancer_name,k,cancer_genes,target1,nontarget1,nodetype):
 
 
 if __name__ == "__main__":
-    # oncogenes
+    # prostate cancer
     tumour_type = 'prostate'
     cancer_name = 'Prostate Cancer'
     k = 2
@@ -97,7 +97,7 @@ if __name__ == "__main__":
     prune(cancer_name,k,cancer_genes,target1,nontarget1,nodetype)
 
 
-    # oncogenes
+    # breast cancer
     tumour_type = 'breast'
     cancer_name = 'Breast Cancer'
     k = 2
@@ -105,3 +105,21 @@ if __name__ == "__main__":
     cancer_genes = onco1.copy()
     nodetype = 'oncogenes'
     prune(cancer_name,k,cancer_genes,target1,nontarget1,nodetype)
+
+    # breast cancer
+    tumour_type = 'colorectal'
+    cancer_name = 'Colorectal Cancer'
+    k = 2
+    onco1, target1, nontarget1 = find_subgene(whole_signaling, tumour_type, cancer_name)
+    cancer_genes = onco1.copy()
+    nodetype = 'oncogenes'
+    prune(cancer_name, k, cancer_genes, target1, nontarget1, nodetype)
+
+    # breast cancer
+    tumour_type = 'lung cancer'
+    cancer_name = 'Lung Cancer'
+    k = 2
+    onco1, target1, nontarget1 = find_subgene(whole_signaling, tumour_type, cancer_name)
+    cancer_genes = onco1.copy()
+    nodetype = 'oncogenes'
+    prune(cancer_name, k, cancer_genes, target1, nontarget1, nodetype)

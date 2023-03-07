@@ -10,21 +10,24 @@ import itertools
 from statistics import mean
 from HogwartsCanceType import *
 from math import floor
+import matplotlib.pyplot as plt
 
 '''
-This file is for analyzing the performance of prune algorithm.
+This file is for analyzing known targets
 '''
 
 def analyze_prune(cancer_name,known_targets_path,combo_candidates_path,k,nodetype):
+    # read known target combination and candidate combination
     known_targets = pd.read_csv(known_targets_path,sep = ',',header = 0, index_col = 0)
     combo_candidates = pd.read_csv(combo_candidates_path,sep=',',header=0,index_col=[0,1])
+    # write to file
     with open(f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_known targets analysis.txt', 'w') as f:
-        combo_len = len(combo_candidates)
-        known_len = len(known_targets)
+        combo_len = len(combo_candidates) # number of candidate combination
+        known_len = len(known_targets) # number of known target combination
         # similarity
-        na_count0 = combo_candidates['similarity'].isna().sum()
+        na_count0 = combo_candidates['similarity'].isna().sum() # number of NA values
         na_count1 = known_targets['similarity'].isna().sum()
-        na_percentage0 = na_count0 / combo_len
+        na_percentage0 = na_count0 / combo_len # percentage of NA values
         na_percentage1 = na_count1 / known_len
         # drop na values
         dropna0 = combo_candidates['similarity'].sort_values(ascending = False).dropna()
@@ -39,6 +42,7 @@ def analyze_prune(cancer_name,known_targets_path,combo_candidates_path,k,nodetyp
         f.write('There are {} NA values in similarity column in known target combination\n'.format(na_percentage1))
         f.write('After dropping NA values, \n')
         similarity_percentage = {}
+        # record the percentage of known target combination that are in the top 5% - 50% of candidate combination
         for pc in [0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50]:
             count = (dropna1 > dropna0[floor(len(dropna0) * pc)]).sum()
             percent = count / len(dropna1)
@@ -105,6 +109,31 @@ def analyze_prune(cancer_name,known_targets_path,combo_candidates_path,k,nodetyp
             f.write(
                 f'{count} ({percent:.2%}) known target combinations are in the top {pc:.2%} combination candidates\n')
         f.write('\n\n')
+
+        # pdist difference
+        na_count0 = combo_candidates['pdist_diff'].isna().sum()
+        na_count1 = known_targets['pdist_diff'].isna().sum()
+        na_percentage0 = na_count0 / combo_len
+        na_percentage1 = na_count1 / known_len
+        dropna0 = combo_candidates['pdist_diff'].sort_values(ascending=True).dropna()
+        dropna1 = known_targets['pdist_diff'].sort_values(ascending=True).dropna()
+        f.write('Pdist difference:\n')
+        f.write('Pdist difference are sorted in ascending order\n')
+        f.write(
+            'There are {} NA values in pdist_diff column in combination candidates\n'.format(na_percentage0))
+        f.write(
+            'There are {} NA values in pdist_diff column in known target combination\n'.format(
+                na_percentage1))
+        f.write('After dropping NA values, \n')
+        pdistdiff_percentage = {}
+        for pc in [0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50]:
+            count = (dropna1 < dropna0[floor(len(dropna0) * pc)]).sum()
+            percent = count / len(dropna1)
+            pdistdiff_percentage[pc] = percent
+            f.write(
+                f'{count} ({percent:.2%}) known target combinations are in the top {pc:.2%} combination candidates\n')
+        f.write('\n\n')
+
         # distance within combination
         na_count0 = combo_candidates['distance'].isna().sum()
         na_count1 = known_targets['distance'].isna().sum()
@@ -150,4 +179,5 @@ def analyze_prune(cancer_name,known_targets_path,combo_candidates_path,k,nodetyp
             f.write(f'{count0} ({count0/len(dropna0):.2%}) combination candidates have {i} targets overlapped with cancergenes\n')
             f.write(f'{count1} ({count1/len(dropna1):.2%}) known target combinations have {i} targets overlapped with cancergenes\n')
         f.close()
+        # plot
 

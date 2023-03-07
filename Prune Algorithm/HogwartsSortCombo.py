@@ -10,7 +10,6 @@ import itertools
 from statistics import mean
 from HogwartsCanceType import *
 
-
 def jaccard_binary(x, y):
     """A function for finding the similarity between two binary vectors"""
     intersection = np.logical_and(x, y)
@@ -128,6 +127,7 @@ def sortCombo(candidates, k,cancer_genes,nodetype, targetset, cancer_network, ca
     pdist_cancergenes = {}
     pdist_othergenes = {}
     pdist_scores = {}
+    pdist_diff = {}
     similarity_scores = {}
     distance_scores = {}
     overlapping_scores = {}
@@ -158,6 +158,7 @@ def sortCombo(candidates, k,cancer_genes,nodetype, targetset, cancer_network, ca
         mean_distance = mean(distance_1)
         pdist_cancergenes[subset] = mean_po
         pdist_othergenes[subset] = mean_pr
+        pdist_diff[subset] = diff
         pdist_scores[subset] = (diff ** 2) / mean_po
         distance_scores[subset] = mean_distance
         overlapping_scores[subset] = overlapping_count1
@@ -166,9 +167,9 @@ def sortCombo(candidates, k,cancer_genes,nodetype, targetset, cancer_network, ca
         print(f'{count},{subset}')
 
     cs_df = pd.concat([pd.Series(d) for d in
-                       [similarity_scores, pdist_scores, pdist_cancergenes, pdist_othergenes, distance_scores,
+                       [similarity_scores, pdist_scores, pdist_cancergenes, pdist_othergenes, pdist_diff, distance_scores,
                         overlapping_scores]], axis=1)
-    cs_df.columns = ['similarity', 'pdist', 'pdist_cancergenes', 'pdist_othergenes', 'distance', 'overlapping']
+    cs_df.columns = ['similarity', 'pdist', 'pdist_cancergenes', 'pdist_othergenes','pdist_diff', 'distance', 'overlapping']
     cs_df.to_csv(f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_{k}set_combo.csv', header=True, index=True, sep=',')
     # cs_df = pd.read_csv(f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_{k}set_combo.csv', header=0, index_col=[0,1], sep=',')
     known_targets = pd.DataFrame()
