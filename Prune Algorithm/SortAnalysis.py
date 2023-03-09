@@ -179,5 +179,31 @@ def analyze_prune(cancer_name,known_targets_path,combo_candidates_path,k,nodetyp
             f.write(f'{count0} ({count0/len(dropna0):.2%}) combination candidates have {i} targets overlapped with cancergenes\n')
             f.write(f'{count1} ({count1/len(dropna1):.2%}) known target combinations have {i} targets overlapped with cancergenes\n')
         f.close()
-        # plot
 
+        # plot
+        if not os.path.exists(f'{prune_path}//{cancer_name}_{nodetype}//plot'):
+            os.makedirs(f'{prune_path}//{cancer_name}_{nodetype}//plot')
+        # distribution
+        # known targets
+        for col in known_targets.columns:
+            plt.hist(known_targets[col],edgecolor='black',bins=20)
+            # plt.yscale('log')
+            mn, mx = plt.xlim()
+            plt.xlim(mn, mx)
+            plt.ylabel("Count")
+            plt.xlabel(col)
+            plt.title(f'{col} Distribution')
+            plt.savefig(f'{prune_path}//{cancer_name}_{nodetype}//plot//{cancer_name}_{nodetype}_known targets_{col} Distribution.png')
+            plt.close('all')
+        # candidates
+        for col in combo_candidates.columns:
+            plt.hist(combo_candidates[col], edgecolor='black',bins=20)
+            # plt.yscale('log')
+            mn, mx = plt.xlim()
+            plt.xlim(mn, mx)
+            plt.ylabel("Count")
+            plt.xlabel(col)
+            plt.title(f'{col} Distribution')
+            plt.savefig(
+                f'{prune_path}//{cancer_name}_{nodetype}//plot//{cancer_name}_{nodetype}_candidate targets_{col} Distribution.png')
+            plt.close('all')
