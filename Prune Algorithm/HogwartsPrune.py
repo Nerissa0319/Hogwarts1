@@ -1,5 +1,6 @@
 import sys
 import os
+
 sys.path.insert(1, 'D://Code//Hogwarts//code//signaling network')
 import pandas as pd
 import HogwartsHallmarkAnalysis as hallmark
@@ -16,10 +17,10 @@ from HogwartsConstruct import *
 from SortAnalysis import *
 
 
-def prune(cancer_name,k,cancer_genes,target1,nontarget1,nodetype):
+def prune(cancer_name, k, cancer_genes, target1, nontarget1, nodetype):
     # create new path if path does not exist
     if not os.path.exists(f'{output_path}/prune/{cancer_name}_{nodetype}/{cancer_name}_{nodetype}.gexf'):
-        onco_network = constructNetwork(cancer_genes,nodetype, target1, whole_signaling, cancer_name)
+        onco_network = constructNetwork(cancer_genes, nodetype, target1, whole_signaling, cancer_name)
     else:
         # construct the cancer network
         onco_network = nx.read_gexf(f'{output_path}/prune/{cancer_name}_{nodetype}/{cancer_name}_{nodetype}.gexf')
@@ -40,13 +41,15 @@ def prune(cancer_name,k,cancer_genes,target1,nontarget1,nodetype):
             t1_in_network += 1
 
     # prune by pdistance
-    candidate3 = pruneByPdist_s(cancer_genes, nodetype,target1, candidate1, onco_network, cancer_name)
-    sortCombo(candidate3, k, cancer_genes, nodetype,target1, onco_network, cancer_name, 10)
+    candidate3 = pruneByPdist_s(cancer_genes, nodetype, target1, candidate1, onco_network, cancer_name)
+    sortCombo(candidate3, k, cancer_genes, nodetype, target1, onco_network, cancer_name, 10)
     t3_in_network = 0
     for u in candidate3:
         if u in target1:
             t3_in_network += 1
-    analyze_prune(cancer_name,f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_known_targets.csv',f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_{k}set_combo.txt',k,nodetype)
+    analyze_prune(cancer_name, f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_known_targets.csv',
+                  f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_{k}set_combo.txt',
+                  f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_{k}pruned_combo.txt', k, nodetype)
     # print basic information about the cancer
     with open(f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_basic_info.csv', 'w') as f:
         print('Cancer Subtype:{}'.format(cancer_name))
@@ -94,8 +97,7 @@ if __name__ == "__main__":
     onco1, target1, nontarget1 = find_subgene(whole_signaling, tumour_type, cancer_name)
     cancer_genes = onco1.copy()
     nodetype = 'oncogenes'
-    prune(cancer_name,k,cancer_genes,target1,nontarget1,nodetype)
-
+    prune(cancer_name, k, cancer_genes, target1, nontarget1, nodetype)
 
     # breast cancer
     tumour_type = 'breast'
@@ -104,7 +106,7 @@ if __name__ == "__main__":
     onco1, target1, nontarget1 = find_subgene(whole_signaling, tumour_type, cancer_name)
     cancer_genes = onco1.copy()
     nodetype = 'oncogenes'
-    prune(cancer_name,k,cancer_genes,target1,nontarget1,nodetype)
+    prune(cancer_name, k, cancer_genes, target1, nontarget1, nodetype)
 
     # colorectal cancer
     tumour_type = 'colorectal'
