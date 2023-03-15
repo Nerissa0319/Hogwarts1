@@ -46,7 +46,7 @@ def prune(cancer_name,k,cancer_genes,target1,nontarget1,nodetype):
     # for u in candidate3:
     #     if u in target1:
     #         t3_in_network += 1
-    analyze_prune(cancer_name,f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_known_targets.csv',f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_{k}set_combo.csv',k,nodetype)
+    analyze_prune(cancer_name,f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_known_targets.csv',f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_{k}set_combo.txt',k,nodetype)
     # # print basic information about the cancer
     # with open(f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_basic_info.csv', 'w') as f:
     #     print('Cancer Subtype:{}'.format(cancer_name))

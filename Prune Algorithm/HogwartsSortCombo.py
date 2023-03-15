@@ -98,7 +98,7 @@ def sortCombo(candidates, k,cancer_genes,nodetype, targetset, cancer_network, ca
                 drug_summary.loc[drug, 'pdist_to_cancergenes'] = mean_po
                 drug_summary.loc[drug, 'pdist_to_othergenes'] = mean_pr
                 drug_summary.loc[drug, 'pdist_score'] = (diff ** 2) / mean_po
-
+                drug_summary.loc[drug, 'pdist_diff'] = diff
             for tar1 in temp_target:
                 for tar2 in temp_target:
                     temp_distance.append(dist_df.loc[tar1, tar2])
@@ -170,8 +170,8 @@ def sortCombo(candidates, k,cancer_genes,nodetype, targetset, cancer_network, ca
                        [similarity_scores, pdist_scores, pdist_cancergenes, pdist_othergenes, pdist_diff, distance_scores,
                         overlapping_scores]], axis=1)
     cs_df.columns = ['similarity', 'pdist', 'pdist_cancergenes', 'pdist_othergenes','pdist_diff', 'distance', 'overlapping']
-    cs_df.to_csv(f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_{k}set_combo.csv', header=True, index=True, sep=',')
-    # cs_df = pd.read_csv(f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_{k}set_combo.csv', header=0, index_col=[0,1], sep=',')
+    cs_df.to_csv(f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_{k}set_combo.txt', header=True, index=True, sep='\t')
+    # cs_df = pd.read_csv(f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_{k}set_combo.txt', header=0, index_col=[0,1], sep='\t')
     known_targets = pd.DataFrame()
     for drug in drug_hallmark_k.index:
         temp_target1 = hallmark.drug_targets.loc[
