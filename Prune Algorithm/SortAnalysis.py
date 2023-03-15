@@ -22,6 +22,7 @@ def analyze_prune(cancer_name,known_targets_path,combo_candidates_path,k,nodetyp
     combo_candidates = pd.read_csv(combo_candidates_path,sep='\t',header=0,index_col=[0,1])
     new_combo = combo_candidates.copy()
     # if the pdistance_difference or distance within targets are beyond the range of known targets, then prune it out
+    count = 0
     for ind in combo_candidates.index:
         if combo_candidates.loc[ind,'pdist_diff'] > known_targets['pdist_diff'].max():
             new_combo.drop(index=ind,inplace=True)
@@ -31,6 +32,8 @@ def analyze_prune(cancer_name,known_targets_path,combo_candidates_path,k,nodetyp
             new_combo.drop(index=ind,inplace=True)
         elif combo_candidates.loc[ind,'distance'] < known_targets['distance'].min():
             new_combo.drop(index=ind,inplace=True)
+        count += 1
+        print(count)
     # write to file
     with open(f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_known targets analysis.txt', 'w') as f:
         combo_len = len(combo_candidates) # number of candidate combination
