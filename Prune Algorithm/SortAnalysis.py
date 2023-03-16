@@ -18,11 +18,10 @@ This file is for analyzing known targets
 
 def analyze_prune(cancer_name,known_targets_path,combo_candidates_path,pruned_combo_path,k,nodetype):
     # read known target combination and candidate combination
-    known_targets = pd.read_csv(known_targets_path,sep = ',',header = 0, index_col = 0)
+    known_targets = pd.read_csv(known_targets_path,sep = ',',header = 0, index_col = [0,1])
     combo_candidates = pd.read_csv(combo_candidates_path,sep='\t',header=0,index_col=[0,1])
-    print(combo_candidates.columns)
-    new_combo = pd.read_csv(pruned_combo_path,sep='\t',header=0,index_col=[0])
-    print(new_combo.columns)
+    pruned_combo = pd.read_csv(pruned_combo_path,sep='\t',header=0,index_col=[0,1])
+    print(pruned_combo.columns)
     # write to file
     with open(f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_known targets analysis.txt', 'w') as f:
         combo_len = len(combo_candidates) # number of candidate combination
@@ -187,15 +186,15 @@ def analyze_prune(cancer_name,known_targets_path,combo_candidates_path,pruned_co
 
         with open(f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_known targets analysis after pruning.txt',
                   'w') as f:
-            combo_len = len(new_combo)  # number of candidate combination
+            combo_len = len(pruned_combo)  # number of candidate combination
             known_len = len(known_targets)  # number of known target combination
             # similarity
-            na_count0 = new_combo['similarity'].isna().sum()  # number of NA values
+            na_count0 = pruned_combo['similarity'].isna().sum()  # number of NA values
             na_count1 = known_targets['similarity'].isna().sum()
             na_percentage0 = na_count0 / combo_len  # percentage of NA values
             na_percentage1 = na_count1 / known_len
             # drop na values
-            dropna0 = new_combo['similarity'].sort_values(ascending=False).dropna()
+            dropna0 = pruned_combo['similarity'].sort_values(ascending=False).dropna()
             dropna1 = known_targets['similarity'].sort_values(ascending=False).dropna()
             # write to files
             f.write('There are {} target combinations'.format(combo_len))
@@ -217,11 +216,11 @@ def analyze_prune(cancer_name,known_targets_path,combo_candidates_path,pruned_co
                     f'{count} ({percent:.2%}) known target combinations are in the top {pc:.2%} combination candidates\n')
             f.write('\n\n')
             # pdist
-            na_count0 = new_combo['pdist'].isna().sum()  # count the number of NA values
+            na_count0 = pruned_combo['pdist'].isna().sum()  # count the number of NA values
             na_count1 = known_targets['pdist'].isna().sum()
             na_percentage0 = na_count0 / combo_len  # the percentage of NA values
             na_percentage1 = na_count1 / known_len
-            dropna0 = new_combo['pdist'].sort_values(ascending=False).dropna()  # drop NA values and sort
+            dropna0 = pruned_combo['pdist'].sort_values(ascending=False).dropna()  # drop NA values and sort
             dropna1 = known_targets['pdist'].sort_values(ascending=False).dropna()
             f.write('Pdist scores:\n')
             f.write('Pdist scores are sorted in descending order\n')
@@ -238,11 +237,11 @@ def analyze_prune(cancer_name,known_targets_path,combo_candidates_path,pruned_co
                     f'{count} ({percent:.2%}) known target combinations are in the top {pc:.2%} combination candidates\n')
             f.write('\n\n')
             # pdist to cancergenes
-            na_count0 = new_combo['pdist_cancergenes'].isna().sum()
+            na_count0 = pruned_combo['pdist_cancergenes'].isna().sum()
             na_count1 = known_targets['pdist_cancergenes'].isna().sum()
             na_percentage0 = na_count0 / combo_len
             na_percentage1 = na_count1 / known_len
-            dropna0 = new_combo['pdist_cancergenes'].sort_values(ascending=True).dropna()
+            dropna0 = pruned_combo['pdist_cancergenes'].sort_values(ascending=True).dropna()
             dropna1 = known_targets['pdist_cancergenes'].sort_values(ascending=True).dropna()
             f.write('Pdist to cancergenes:\n')
             f.write('Pdist to cancergenes are sorted in ascending order\n')
@@ -260,11 +259,11 @@ def analyze_prune(cancer_name,known_targets_path,combo_candidates_path,pruned_co
                     f'{count} ({percent:.2%}) known target combinations are in the top {pc:.2%} combination candidates\n')
             f.write('\n\n')
             # pdist to other genes
-            na_count0 = new_combo['pdist_othergenes'].isna().sum()
+            na_count0 = pruned_combo['pdist_othergenes'].isna().sum()
             na_count1 = known_targets['pdist_othergenes'].isna().sum()
             na_percentage0 = na_count0 / combo_len
             na_percentage1 = na_count1 / known_len
-            dropna0 = new_combo['pdist_othergenes'].sort_values(ascending=True).dropna()
+            dropna0 = pruned_combo['pdist_othergenes'].sort_values(ascending=True).dropna()
             dropna1 = known_targets['pdist_othergenes'].sort_values(ascending=True).dropna()
             f.write('Pdist to other genes:\n')
             f.write('Pdist to other genes are sorted in ascending order\n')
@@ -285,11 +284,11 @@ def analyze_prune(cancer_name,known_targets_path,combo_candidates_path,pruned_co
             f.write('\n\n')
 
             # pdist difference
-            na_count0 = new_combo['pdist_diff'].isna().sum()
+            na_count0 = pruned_combo['pdist_diff'].isna().sum()
             na_count1 = known_targets['pdist_diff'].isna().sum()
             na_percentage0 = na_count0 / combo_len
             na_percentage1 = na_count1 / known_len
-            dropna0 = new_combo['pdist_diff'].sort_values(ascending=True).dropna()
+            dropna0 = pruned_combo['pdist_diff'].sort_values(ascending=True).dropna()
             dropna1 = known_targets['pdist_diff'].sort_values(ascending=True).dropna()
             f.write('Pdist difference:\n')
             f.write('Pdist difference are sorted in ascending order\n')
@@ -309,11 +308,11 @@ def analyze_prune(cancer_name,known_targets_path,combo_candidates_path,pruned_co
             f.write('\n\n')
 
             # distance within combination
-            na_count0 = new_combo['distance'].isna().sum()
+            na_count0 = pruned_combo['distance'].isna().sum()
             na_count1 = known_targets['distance'].isna().sum()
             na_percentage0 = na_count0 / combo_len
             na_percentage1 = na_count1 / known_len
-            dropna0 = new_combo['distance'].sort_values(ascending=True).dropna()
+            dropna0 = pruned_combo['distance'].sort_values(ascending=True).dropna()
             dropna1 = known_targets['distance'].sort_values(ascending=True).dropna()
             f.write('Distance:\n')
             f.write('Distance are sorted in ascending order\n')
@@ -332,11 +331,11 @@ def analyze_prune(cancer_name,known_targets_path,combo_candidates_path,pruned_co
                     f'{count} ({percent:.2%}) known target combinations are in the top {pc:.2%} combination candidates\n')
             f.write('\n\n')
             # overlapping
-            na_count0 = new_combo['overlapping'].isna().sum()
+            na_count0 = pruned_combo['overlapping'].isna().sum()
             na_count1 = known_targets['overlapping'].isna().sum()
             na_percentage0 = na_count0 / combo_len
             na_percentage1 = na_count1 / known_len
-            dropna0 = new_combo['overlapping'].sort_values(ascending=True).dropna()
+            dropna0 = pruned_combo['overlapping'].sort_values(ascending=True).dropna()
             dropna1 = known_targets['overlapping'].sort_values(ascending=True).dropna()
             f.write('Overlapping:\n')
             f.write(

@@ -49,7 +49,7 @@ def prune(cancer_name, k, cancer_genes, target1, nontarget1, nodetype):
             t3_in_network += 1
     analyze_prune(cancer_name, f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_known_targets.csv',
                   f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_{k}set_combo.txt',
-                  f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_{k}pruned_combo.txt', k, nodetype)
+                  f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_{k}_pruned.txt', k, nodetype)
     # print basic information about the cancer
     with open(f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_basic_info.csv', 'w') as f:
         print('Cancer Subtype:{}'.format(cancer_name))
@@ -108,18 +108,20 @@ if __name__ == "__main__":
     nodetype = 'oncogenes'
     prune(cancer_name, k, cancer_genes, target1, nontarget1, nodetype)
 
-    # colorectal cancer
-    tumour_type = 'colorectal'
-    cancer_name = 'Colorectal Cancer'
+
+
+    # bladder cancer
+    tumour_type = 'bladder'
+    cancer_name = 'Bladder Cancer'
     k = 2
     onco1, target1, nontarget1 = find_subgene(whole_signaling, tumour_type, cancer_name)
     cancer_genes = onco1.copy()
     nodetype = 'oncogenes'
     prune(cancer_name, k, cancer_genes, target1, nontarget1, nodetype)
 
-    # bladder cancer
-    tumour_type = 'bladder'
-    cancer_name = 'Bladder Cancer'
+    # colorectal cancer
+    tumour_type = 'colorectal'
+    cancer_name = 'Colorectal Cancer'
     k = 2
     onco1, target1, nontarget1 = find_subgene(whole_signaling, tumour_type, cancer_name)
     cancer_genes = onco1.copy()

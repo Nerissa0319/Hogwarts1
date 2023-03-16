@@ -180,72 +180,68 @@ def sortCombo(candidates, k, cancer_genes, nodetype, targetset, cancer_network, 
                              'overlapping']
     known_targets.to_csv(f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_known_targets.csv',
                          header=True, index=True, sep=',')
+    if not os.path.exists(f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_{k}set_combo.txt'):
+        pdist_cancergenes = {}
+        pdist_othergenes = {}
+        pdist_scores = {}
+        pdist_diff = {}
+        similarity_scores = {}
+        distance_scores = {}
+        overlapping_scores = {}
+        count = 0
+        for subset in itertools.combinations(candidates, k):
+            # hallmark score:
+            temp_similarity1 = []
+            for tc in itertools.combinations(subset, 2):
+                h1 = list(hallmark.hallMarks_df.loc[tc[0]][1:])  # hallmarks for one target
+                h2 = list(hallmark.hallMarks_df.loc[tc[1]][1:])  # hallmarks for another target
+                h1_h2 = jaccard_binary(h1, h2)  # compute similarity
+                temp_similarity1.append(h1_h2)  # add the similarity to the temp dataframe
+            similarity_scores[subset] = statistics.mean(temp_similarity1)  # compute the mean
+            po = []  # pdistance to cancergenes
+            pr = []  # pdistance to rest genes
+            distance_1 = []
+            overlapping_count1 = 0
+            for u in subset:
+                po.append(mean(cancergene_pdist.loc[u, :]))
+                pr.append(mean(other_pdist.loc[u, :]))
+                if u in cancer_genes:
+                    overlapping_count1 += 1
+                for v in subset:
+                    distance_1.append(dist_df.loc[u, v])
+            mean_po = mean(po)
+            mean_pr = mean(pr)
+            diff = mean_pr - mean_po  # difference between pdistance to cancergenes and other nodes
+            mean_distance = mean(distance_1)
+            pdist_cancergenes[subset] = mean_po
+            pdist_othergenes[subset] = mean_pr
+            pdist_diff[subset] = diff
+            pdist_scores[subset] = (diff ** 2) / mean_po
+            distance_scores[subset] = mean_distance
+            overlapping_scores[subset] = overlapping_count1
+            # if the pdistance_difference or distance within targets are beyond the range of known targets, then prune it
+            # out
 
-    pdist_cancergenes = {}
-    pdist_othergenes = {}
-    pdist_scores = {}
-    pdist_diff = {}
-    similarity_scores = {}
-    distance_scores = {}
-    overlapping_scores = {}
-    count = 0
-    new_combo = pd.DataFrame(
-        columns=['similarity', 'pdist', 'pdist_cancergenes', 'pdist_othergenes', 'pdist_diff', 'distance',
-                 'overlapping'])
-    indexes = []
-    for subset in itertools.combinations(candidates, k):
-        # hallmark score:
-        temp_similarity1 = []
-        for tc in itertools.combinations(subset, 2):
-            h1 = list(hallmark.hallMarks_df.loc[tc[0]][1:])  # hallmarks for one target
-            h2 = list(hallmark.hallMarks_df.loc[tc[1]][1:])  # hallmarks for another target
-            h1_h2 = jaccard_binary(h1, h2)  # compute similarity
-            temp_similarity1.append(h1_h2)  # add the similarity to the temp dataframe
-        similarity_scores[subset] = statistics.mean(temp_similarity1)  # compute the mean
-        po = []  # pdistance to cancergenes
-        pr = []  # pdistance to rest genes
-        distance_1 = []
-        overlapping_count1 = 0
-        for u in subset:
-            po.append(mean(cancergene_pdist.loc[u, :]))
-            pr.append(mean(other_pdist.loc[u, :]))
-            if u in cancer_genes:
-                overlapping_count1 += 1
-            for v in subset:
-                distance_1.append(dist_df.loc[u, v])
-        mean_po = mean(po)
-        mean_pr = mean(pr)
-        diff = mean_pr - mean_po  # difference between pdistance to cancergenes and other nodes
-        mean_distance = mean(distance_1)
-        pdist_cancergenes[subset] = mean_po
-        pdist_othergenes[subset] = mean_pr
-        pdist_diff[subset] = diff
-        pdist_scores[subset] = (diff ** 2) / mean_po
-        distance_scores[subset] = mean_distance
-        overlapping_scores[subset] = overlapping_count1
-        # if the pdistance_difference or distance within targets are beyond the range of known targets, then prune it
-        # out
 
-        if (diff <= known_targets['pdist_diff'].max()) and (diff >= known_targets['pdist_diff'].min()):
-            if (mean_distance <= known_targets['distance'].max()) and (
-                    mean_distance >= known_targets['distance'].min()):
-                indexes.append(subset)
-                new_combo=new_combo.append(pd.Series([similarity_scores[subset], pdist_scores[subset], pdist_cancergenes[subset],
-                                         pdist_othergenes[subset], pdist_diff[subset],
-                                         distance_scores[subset], overlapping_scores[subset]],index=new_combo.columns),ignore_index=True)
+            count += 1
+            print(f'{count},{subset}')
 
-        count += 1
-        print(f'{count},{subset}')
+        cs_df = pd.concat([pd.Series(d) for d in
+                           [similarity_scores, pdist_scores, pdist_cancergenes, pdist_othergenes, pdist_diff,
+                            distance_scores,
+                            overlapping_scores]], axis=1)
 
-    cs_df = pd.concat([pd.Series(d) for d in
-                       [similarity_scores, pdist_scores, pdist_cancergenes, pdist_othergenes, pdist_diff,
-                        distance_scores,
-                        overlapping_scores]], axis=1)
-    new_combo.index = indexes
-    cs_df.columns = ['similarity', 'pdist', 'pdist_cancergenes', 'pdist_othergenes', 'pdist_diff', 'distance',
-                     'overlapping']
-    cs_df.to_csv(f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_{k}set_combo.txt', header=True,
-                 index=True, sep='\t')
-    new_combo.to_csv(f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_{k}pruned_combo.txt',
+        cs_df.columns = ['similarity', 'pdist', 'pdist_cancergenes', 'pdist_othergenes', 'pdist_diff', 'distance',
+                         'overlapping']
+
+        cs_df.to_csv(f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_{k}set_combo.txt', header=True,
+                     index=True, sep='\t')
+    else:
+        cs_df = pd.read_csv(f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_{k}set_combo.txt', sep='\t',header=0,index_col=[0,1])
+    cs_df1 = cs_df[(cs_df['pdist_diff'] <= known_targets['pdist_diff'].max()) & (
+                cs_df['pdist_diff'] >= known_targets['pdist_diff'].min()) & (
+                               cs_df['distance'] <= known_targets['distance'].max()) & (
+                               cs_df['distance'] >= known_targets['distance'].min())]
+    cs_df1.to_csv(f'{prune_path}//{cancer_name}_{nodetype}//{cancer_name}_{nodetype}_{k}_pruned.txt',
                      header=True,
                      index=True, sep='\t')
